@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchJobSeekers } from "../services/jobSeekerAPI";
+import { fetchJobSeekers } from "../services/jobseekerAPI";
 import { MapPin, Clock, Car, User } from "lucide-react";
 
 const SearchDB = () => {
