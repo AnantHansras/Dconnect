@@ -7,7 +7,9 @@ import Navbar from "../Components/Navbar";
 import SVGGraphic from "../assets/landing.svg";
 import SVGGraphic1 from "../assets/jobSeeker.svg";
 import SVGGraphic2 from "../assets/company.svg";
+import { useNavigate } from "react-router-dom";
 export default function Landing({ userType }) {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)]">
       <section className="min-h-screen flex-1 md:p-8 flex flex-col justify-center items-center text-center bg-[var(--background)]">
@@ -81,13 +83,14 @@ export default function Landing({ userType }) {
           {userType === null && (
             <>
               <motion.a
-                href="/authseeker"
+              onClick={() => {navigate("/authseeker")}}
+                
                 className="bg-[var(--background)] mx-auto w-fit hover:scale-110 duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Search className="w-5 h-5" /> Find a Job
               </motion.a>
               <motion.a
-                href="/auth"
+                onClick={() => {navigate("/auth")}}
                 className="bg-[#4A90E2] text-white hover:scale-110 duration-200 px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Briefcase className="w-5 h-5" /> Hire Now
@@ -104,7 +107,8 @@ export default function Landing({ userType }) {
                 <FileText className="w-5 h-5" /> Fill Details
               </motion.a>
               <motion.a
-                href="/available_posts"
+              onClick={() => {navigate("/available_posts")}}
+                
                 className="bg-[#4A90E2] hover:scale-110 duration-200 text-white px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Briefcase className="w-5 h-5" /> Available Jobs
@@ -115,13 +119,14 @@ export default function Landing({ userType }) {
           {userType === "company" && (
             <>
               <motion.a
-                href="/postjob"
+              onClick={() => {navigate("/postjob")}}
                 className="bg-[var(--background)] w-fit mx-auto hover:scale-110 duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Briefcase className="w-5 h-5" /> Post Job
               </motion.a>
               <motion.a
-                href="/SearchDB"
+              onClick={() => {navigate("/SearchDB")}}
+                
                 className="bg-[#4A90E2] hover:scale-110 duration-200 text-white px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Search className="w-5 h-5" /> Search Jobseekers
