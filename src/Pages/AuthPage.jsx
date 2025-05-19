@@ -24,7 +24,7 @@ export default function AuthPage() {
             className={`py-1.5 px-3 rounded-[--radius] transition flex items-center justify-center gap-2 ${activeTab === 'signup' ? 'bg-[#4A90E2] text-[--primary-foreground]' : 'bg-[--secondary] hover:bg-[--muted]'}`}
             onClick={() => setActiveTab('signup')}
           >
-            <User size={16} /> Create Account
+            <User size={16} />  SignUp
           </button>
         </div>
 

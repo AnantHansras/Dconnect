@@ -38,7 +38,7 @@ export default function AuthPageSeeker() {
             }`}
             onClick={() => setActiveTab("signup")}
           >
-            <User size={16} /> Create Account
+            <User size={16} />  SignUp
           </button>
         </div>
 
@@ -395,7 +395,7 @@ function Login() {
 //             className="w-full bg-[#4A90E2] py-2 px-4 rounded text-white mx-auto"
 //             onClick={(e) => handleVerifyOtp(e)}
 //           >
-//             Create Account
+//              SignUp
 //           </button>
 //         </div>
 //       )}

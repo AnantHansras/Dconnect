@@ -64,7 +64,7 @@ export default function Contact() {
             </div>
             <input type="email" placeholder="Email" className="border border-[var(--input)] p-2 w-full bg-[var(--card)] text-[var(--foreground)] rounded-lg" required />
             <textarea placeholder="Your Message" className="border border-[var(--input)] p-2 w-full h-24 bg-[var(--card)] text-[var(--foreground)] rounded-lg" required></textarea>
-            <button type="submit" className={`px-4 py-2 flex items-center justify-center gap-2 bg-[#4A90E2] text-[var(--primary-foreground)] rounded-lg transition duration-300 hover:bg-[#357ABD] ${isSubmitted ? "bg-[#357ABD]" : ""}`}>              <Send className="w-5 h-5" />
+            <button type="submit" className={`px-4 py-2 flex items-center hover:scale-110 justify-center gap-2 bg-[#4A90E2] text-[var(--primary-foreground)] rounded-lg transition duration-300  ${isSubmitted ? "bg-[#357ABD]" : ""}`}>              <Send className="w-5 h-5" />
               {isSubmitted ? "Message Sent" : "Send Message"}
             </button>
           </form>
