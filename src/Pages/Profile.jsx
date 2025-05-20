@@ -262,9 +262,9 @@ const Profile = () => {
               transition={{ delay: 0.2, duration: 0.5 }}
             >
               <div className="w-28 h-28 bg-white rounded-full border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
-                {profile_pic ? (
+                {data.profile_pic ? (
                   <img
-                    src={profile_pic || "/placeholder.svg"}
+                    src={data.profile_pic || "/placeholder.svg"}
                     alt={name}
                     className="w-full h-full object-cover rounded-full"
                   />
