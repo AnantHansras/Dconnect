@@ -1,8 +1,9 @@
 
-const {Job} = require('../Models/job.js');
+const Job = require('../Models/job.js');
 exports.postJob = async (req, res) => {
   try {
     const job = new Job(req.body);
+    console.log("Job data:", job);
     await job.save();
 
     res.status(201).json({
