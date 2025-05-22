@@ -96,15 +96,22 @@ export default function PostJob() {
 
   <form
     onSubmit={handleSubmit(onSubmit)}
-    className="bg-[var(--background)] rounded-3xl shadow-lg p-8 space-y-8 border border-gray-100"
+    className="bg-[var(--background)] rounded-3xl border border-t-4 border-violet-500 shadow-lg p-8 space-y-8 "
   >
     {/* Company & Location */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <InputField label="Company Name" icon={<BriefcaseIcon className="w-5 h-5" />} {...register("companyName")} error={errors.companyName?.message} placeholder="e.g. Acme Inc." />
-      <InputField label="Location" icon={<MapPinIcon className="w-5 h-5" />} {...register("location")} error={errors.location?.message} placeholder="e.g. Mumbai, India" />
+      <InputField label="Company Name" icon={<BriefcaseIcon className="w-5 h-5 text-indigo-500" />} {...register("companyName")} error={errors.companyName?.message} placeholder="e.g. Acme Inc." />
+      <InputField label="Location" icon={<MapPinIcon className="w-5 h-5 text-indigo-500" />} {...register("location")} error={errors.location?.message} placeholder="e.g. Mumbai, India" />
     </div>
 
     {/* Job Type & People Needed */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      
+      <InputField label="Expected Salary" icon={<DollarSignIcon className="w-5 h-5 text-indigo-500" />} {...register("expectedSalary")} error={errors.expectedSalary?.message} placeholder="e.g. ₹15,000/month" />
+      <InputField label="Number of People Needed" type="number" icon={<UsersIcon className="w-5 h-5 text-indigo-500" />} {...register("numberOfPeople")} error={errors.numberOfPeople?.message} min="1" />
+    </div>
+
+    {/* Salary & Work Time */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <SelectField label="Job Type" options={[
         "Delivery Boy (Zomato, Swiggy, etc.)",
@@ -113,12 +120,6 @@ export default function PostJob() {
         "Sales/Marketing (In-store, promotions)",
         "Other (please specify)",
       ]} {...register("jobType")} error={errors.jobType?.message} />
-      <InputField label="Number of People Needed" type="number" icon={<UsersIcon className="w-5 h-5" />} {...register("numberOfPeople")} error={errors.numberOfPeople?.message} min="1" />
-    </div>
-
-    {/* Salary & Work Time */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <InputField label="Expected Salary" icon={<DollarSignIcon className="w-5 h-5" />} {...register("expectedSalary")} error={errors.expectedSalary?.message} placeholder="e.g. ₹15,000/month" />
       <SelectField label="Work Time" options={[
         "Morning (6 AM – 12 PM)",
         "Afternoon (12 PM – 6 PM)",
@@ -134,10 +135,10 @@ export default function PostJob() {
       <button
         type="button"
         onClick={() => setDatePickerVisible(!datePickerVisible)}
-        className="w-full flex justify-between items-center px-4 py-2 border rounded-md bg-gray-50 text-gray-600 hover:bg-gray-100 transition"
+        className="w-full flex justify-between items-center px-4 py-2 border rounded-md bg-white text-gray-600 hover:bg-gray-100 transition"
       >
         {startDate ? format(startDate, "PPP") : "Pick a date"}
-        <CalendarIcon className="h-5 w-5 text-gray-400" />
+        <CalendarIcon className="h-5 w-5 text-indigo-500" />
       </button>
       {datePickerVisible && (
         <input
@@ -164,7 +165,7 @@ export default function PostJob() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="bg-[#4A90E2] hover:scale-110 text-white font-medium px-6 py-3 rounded-xl transition-all disabled:opacity-50"
+        className="bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white font-medium px-6 py-3 rounded-xl transition-all disabled:opacity-50"
       >
         {isSubmitting ? "Processing..." : "Post Job"}
       </button>

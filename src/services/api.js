@@ -1,5 +1,5 @@
 export const BASE_URL = "https://dconnect-backend.onrender.com"; // Replace with your actual backend URL
-
+// export const BASE_URL = "https://localhost:8000"; // Replace with your actual backend URL
 export const jobSeekerEndpoints = {
   ADD_JOBSEEKER_API: `${BASE_URL}/jobseeker/add`,
   GET_JOBSEEKERS_API: `${BASE_URL}/jobseeker/search`,
