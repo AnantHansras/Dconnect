@@ -18,3 +18,8 @@ export const jobseekerauthEndpoints = {
   LOGIN_API: `${BASE_URL}/auth/login`,
   VERIFY_LOGIN_API: `${BASE_URL}/auth/verify-login`,
 };
+
+export const jobEndpoints = {
+  POST_JOB_API: `${BASE_URL}/api/v1/jobs`,
+  GET_ALL_JOBS_API: `${BASE_URL}/api/v1/jobs`,
+};

@@ -1,9 +1,225 @@
-import React from 'react'
 
-const PostJob = () => {
+"use client";
+import  { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { postJob } from "../services/jobAPI";
+import {
+  CalendarIcon,
+  MapPinIcon,
+  BriefcaseIcon,
+  UsersIcon,
+  DollarSignIcon,
+} from "lucide-react";
+
+const formSchema = z
+  .object({
+    companyName: z.string().min(2, { message: "Company name must be at least 2 characters." }),
+    location: z.string().min(2, { message: "Location is required." }),
+    jobType: z.enum([
+      "Delivery Boy (Zomato, Swiggy, etc.)",
+      "Driver (Cab, Auto, Private)",
+      "Helper (Shop, Warehouse, etc.)",
+      "Sales/Marketing (In-store, promotions)",
+      "Other (please specify)",
+    ]),
+    numberOfPeople: z.coerce.number().int().positive({ message: "Please enter a positive number." }),
+    expectedSalary: z.string().min(1, { message: "Expected salary is required." }),
+    work_time: z.enum([
+      "Morning (6 AM – 12 PM)",
+      "Afternoon (12 PM – 6 PM)",
+      "Evening (6 PM – 10 PM)",
+      "Night (10 PM – 6 AM)",
+      "Flexible/Any time",
+    ]),
+    startDate: z.date({ required_error: "Please select a start date." }),
+    minAge: z.coerce.number().int().min(16, { message: "Minimum age must be at least 16." }),
+    maxAge: z.coerce.number().int().min(16, { message: "Maximum age must be at least 16." }),
+    description: z.string().min(10, { message: "Job description must be at least 10 characters." }),
+    requirements: z.string().min(10, { message: "Job requirements must be at least 10 characters." }),
+  })
+  .refine((data) => data.maxAge >= data.minAge, {
+    message: "Maximum age must be greater than or equal to minimum age",
+    path: ["maxAge"],
+  });
+
+export default function PostJob() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      companyName: "",
+      location: "",
+      jobType: "Delivery Boy (Zomato, Swiggy, etc.)",
+      numberOfPeople: 1,
+      expectedSalary: "",
+      work_time: "Morning (6 AM – 12 PM)",
+      minAge: 18,
+      maxAge: 65,
+      description: "",
+      requirements: "",
+    },
+  });
+
+  const startDate = watch("startDate");
+
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
+    try {
+      console.log(data);
+      await postJob(data);
+      reset();
+    } catch (error) {
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div>PostJob</div>
-  )
+    <div className="max-w-3xl mx-auto px-4 py-10 sm:px-6 lg:px-8 pt-24">
+  <div className="text-center mb-10">
+    <h1 className="text-4xl font-bold text-gray-900 mb-2">Post a Job</h1>
+    <p className="text-md text-gray-500">Fill out the form to hire workers for your company</p>
+  </div>
+
+  <form
+    onSubmit={handleSubmit(onSubmit)}
+    className="bg-[var(--background)] rounded-3xl shadow-lg p-8 space-y-8 border border-gray-100"
+  >
+    {/* Company & Location */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <InputField label="Company Name" icon={<BriefcaseIcon className="w-5 h-5" />} {...register("companyName")} error={errors.companyName?.message} placeholder="e.g. Acme Inc." />
+      <InputField label="Location" icon={<MapPinIcon className="w-5 h-5" />} {...register("location")} error={errors.location?.message} placeholder="e.g. Mumbai, India" />
+    </div>
+
+    {/* Job Type & People Needed */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <SelectField label="Job Type" options={[
+        "Delivery Boy (Zomato, Swiggy, etc.)",
+        "Driver (Cab, Auto, Private)",
+        "Helper (Shop, Warehouse, etc.)",
+        "Sales/Marketing (In-store, promotions)",
+        "Other (please specify)",
+      ]} {...register("jobType")} error={errors.jobType?.message} />
+      <InputField label="Number of People Needed" type="number" icon={<UsersIcon className="w-5 h-5" />} {...register("numberOfPeople")} error={errors.numberOfPeople?.message} min="1" />
+    </div>
+
+    {/* Salary & Work Time */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <InputField label="Expected Salary" icon={<DollarSignIcon className="w-5 h-5" />} {...register("expectedSalary")} error={errors.expectedSalary?.message} placeholder="e.g. ₹15,000/month" />
+      <SelectField label="Work Time" options={[
+        "Morning (6 AM – 12 PM)",
+        "Afternoon (12 PM – 6 PM)",
+        "Evening (6 PM – 10 PM)",
+        "Night (10 PM – 6 AM)",
+        "Flexible/Any time",
+      ]} {...register("work_time")} error={errors.work_time?.message} />
+    </div>
+
+    {/* Start Date */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+      <button
+        type="button"
+        onClick={() => setDatePickerVisible(!datePickerVisible)}
+        className="w-full flex justify-between items-center px-4 py-2 border rounded-md bg-gray-50 text-gray-600 hover:bg-gray-100 transition"
+      >
+        {startDate ? format(startDate, "PPP") : "Pick a date"}
+        <CalendarIcon className="h-5 w-5 text-gray-400" />
+      </button>
+      {datePickerVisible && (
+        <input
+          type="date"
+          onChange={(e) => setValue("startDate", new Date(e.target.value))}
+          className="mt-3 w-full border rounded-md px-3 py-2"
+        />
+      )}
+      {errors.startDate && <p className="text-red-500 text-sm mt-2">{errors.startDate.message}</p>}
+    </div>
+
+    {/* Age Range */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <InputField label="Minimum Age" type="number" {...register("minAge")} error={errors.minAge?.message} min="16" />
+      <InputField label="Maximum Age" type="number" {...register("maxAge")} error={errors.maxAge?.message} min="16" />
+    </div>
+
+    {/* Description & Requirements */}
+    <TextAreaField label="Job Description" {...register("description")} error={errors.description?.message} placeholder="Responsibilities, duties..." />
+    <TextAreaField label="Job Requirements" {...register("requirements")} error={errors.requirements?.message} placeholder="Qualifications, experience..." />
+
+    {/* Submit Button */}
+    <div className="flex justify-end">
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="bg-[#4A90E2] hover:scale-110 text-white font-medium px-6 py-3 rounded-xl transition-all disabled:opacity-50"
+      >
+        {isSubmitting ? "Processing..." : "Post Job"}
+      </button>
+    </div>
+  </form>
+</div>
+
+  );
 }
 
-export default PostJob
+// InputField
+const InputField = ({ label, icon, error, ...props }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="relative">
+      {icon && <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">{icon}</div>}
+      <input
+        className={`w-full ${icon ? "pl-10" : "pl-3"} pr-3 py-2 border rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          error ? "border-red-500" : "border-gray-300"
+        } transition`}
+        {...props}
+      />
+    </div>
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+  </div>
+);
+
+// SelectField
+const SelectField = ({ label, options, error, ...props }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <select
+      className={`w-full px-3 py-2 border rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        error ? "border-red-500" : "border-gray-300"
+      } transition`}
+      {...props}
+    >
+      {options.map((opt) => (
+        <option key={opt} value={opt}>{opt}</option>
+      ))}
+    </select>
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+  </div>
+);
+
+// TextAreaField
+const TextAreaField = ({ label, error, ...props }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <textarea
+      className={`w-full px-3 py-2 border rounded-lg bg-white shadow-sm resize-none min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        error ? "border-red-500" : "border-gray-300"
+      } transition`}
+      {...props}
+    />
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+  </div>
+);
