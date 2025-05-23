@@ -26,7 +26,7 @@ app.use(cookieParser());
 app.use(
 	cors({
 		origin:"*",
-		credentials:true,
+		// credentials:true,
 	})
 )
 
@@ -44,7 +44,7 @@ app.use('/jobseeker',jobSeekerRoutes)
 app.use('/companyauth',companyauth)
 app.use('/auth',jobSeekerAuth)
 app.use('/api/v1',jobRoutes)
-app.use('/connections',connectionRoutes)
+app.use('/connection',connectionRoutes)
 
 app.get("/", (req, res) => {
 	return res.json({
