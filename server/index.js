@@ -38,10 +38,13 @@ const jobSeekerRoutes = require('./Routes/jobseeker')
 const companyauth = require('./Routes/companyauth')
 const jobSeekerAuth = require('./Routes/jobseekerauth')
 const jobRoutes = require('./Routes/job')
+const connectionRoutes = require('./Routes/connections')
+
 app.use('/jobseeker',jobSeekerRoutes)
 app.use('/companyauth',companyauth)
 app.use('/auth',jobSeekerAuth)
 app.use('/api/v1',jobRoutes)
+app.use('/connections',connectionRoutes)
 
 app.get("/", (req, res) => {
 	return res.json({

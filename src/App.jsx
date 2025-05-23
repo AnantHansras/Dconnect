@@ -15,6 +15,7 @@ import AuthPageSeeker from './Pages/AuthPageSeeker';
 import PostJob from './Pages/PostJob';
 import Available from './Pages/Available';
 import Profile from './Pages/Profile';
+import AllConnections from './Pages/AllConnetions';
 function App() {
   const [userType, setUserType] = useState(null);
   useEffect(() => {
@@ -62,6 +63,7 @@ function App() {
         <Route path="/contact" element={<Contact/>}  />
         <Route path="/about" element={<About/>}  />
         <Route path="/searchdb" element={<SearchDB/>}  />
+        <Route path="/allconnections" element={<AllConnections/>}  />
       </Routes>
     
     </>

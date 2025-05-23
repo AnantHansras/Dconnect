@@ -1,7 +1,6 @@
-
-
 "use client"
 import { useLocation } from "react-router-dom"
+import { makeConnection } from "../services/connectionAPI"
 import {
   ArrowLeft,
   Phone,
@@ -16,8 +15,8 @@ import {
   ChevronRight,
   Info,
 } from "lucide-react"
-import { motion } from "framer-motion"
-
+import { motion,AnimatePresence  } from "framer-motion"
+import { useState } from "react"
 const Profile = () => {
   const { state } = useLocation()
   const {
@@ -36,7 +35,7 @@ const Profile = () => {
     email,
     vehicle_type
   } = state || {}
-  // Mock Data matching the Mongoose schema
+ 
   const data = {
     name: "John Doe",
     phone: "123-456-7890",
@@ -97,7 +96,15 @@ const Profile = () => {
       opacity: 1,
     },
   }
-
+  const [showCheck, setShowCheck] = useState(false);
+  const companyName = sessionStorage.getItem("companyName");
+  const companyPhone = sessionStorage.getItem("companyPhone");
+  const handleClick = async () => {
+    setShowCheck(true);
+    await makeConnection({companyName, companyPhone,jobSeekerName:name,jobSeekerPhone:phone });
+    setTimeout(() => setShowCheck(false), 1500); 
+  };
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pt-12">
       <div className="w-full max-w-md">
@@ -301,17 +308,18 @@ const Profile = () => {
               <div className="p-4 bg-slate-50 rounded-xl">
                 <div className="flex items-start">
                   <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 mt-1">
-                    <Info className="w-4 h-4 text-indigo-600" />
+                    <Info className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-slate-700 text-sm">{experience}</span>
+                    <span className="text-slate-700 text-sm font-medium ">{experience}</span>
                   </div>
                 </div>
               </div>
             </motion.div>
           </motion.div>
 
-          <motion.div
+         
+      <div> <motion.div
             className="p-6 border-t border-slate-100"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -321,10 +329,44 @@ const Profile = () => {
               className="w-full bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white py-3 rounded-xl flex items-center justify-center font-medium shadow-lg shadow-indigo-200"
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
+              onClick={handleClick}
             >
               Connect with {name.split(" ")[0]}
             </motion.button>
           </motion.div>
+          <AnimatePresence>
+        {showCheck && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center z-50 bg-black/30"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center w-80 md:w-96 h-52"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="bg-green-500 rounded-full p-8 ">
+                <svg
+                  className="w-16 h-16 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <br/>
+              <div className="text-xl font-bold -mt-4">Done!</div>
+              {/* <div>Our Team will connect you with Jobseeker</div> */}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </div>
         </motion.div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import  { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { motion,AnimatePresence  } from "framer-motion"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { postJob } from "../services/jobAPI";
@@ -73,7 +74,7 @@ export default function PostJob() {
   });
 
   const startDate = watch("startDate");
-
+  const [showCheck, setShowCheck] = useState(false);
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
@@ -84,6 +85,8 @@ export default function PostJob() {
       alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
+      setShowCheck(true);
+      setTimeout(() => setShowCheck(false), 1500);
     }
   };
 
@@ -169,6 +172,38 @@ export default function PostJob() {
       >
         {isSubmitting ? "Processing..." : "Post Job"}
       </button>
+      <AnimatePresence>
+              {showCheck && (
+                <motion.div
+                  className="fixed inset-0 flex items-center justify-center z-50 bg-black/30"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.div
+                    className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center w-80 md:w-96 h-52"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                  >
+                    <div className="bg-green-500 rounded-full p-8 ">
+                      <svg
+                        className="w-16 h-16 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <br/>
+                    <div className="text-xl font-bold -mt-4">Done!</div>
+                    {/* <div>Our Team will connect you with Jobseeker</div> */}
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
     </div>
   </form>
 </div>

@@ -23,3 +23,8 @@ export const jobEndpoints = {
   POST_JOB_API: `${BASE_URL}/api/v1/jobs`,
   GET_ALL_JOBS_API: `${BASE_URL}/api/v1/jobs`,
 };
+
+export const connectionEndpoints = {
+  CREATE_CONNECTION_API: `${BASE_URL}/connection/create`,
+  GET_ALL_CONNECTIONS_API: `${BASE_URL}/connection/all`,
+};

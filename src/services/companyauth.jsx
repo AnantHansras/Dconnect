@@ -32,6 +32,8 @@ export async function verifySignup({ email, otp, name, phone, companyName, locat
 
     toast.success("Signup successful");
     sessionStorage.setItem("userType", "company");
+    sessionStorage.setItem("companyName", companyName);
+    sessionStorage.setItem("companyPhone", phone);
     window.dispatchEvent(new Event("storage"));
     navigate('/');
     return response.data;
@@ -69,10 +71,12 @@ export async function verifyLogin({ email, otp,navigate }) {
     if (!response.data.success) {
       throw new Error(response.data.message);
     }
-
+    
     toast.success("Login successful" );
     // Store user type in session storage
     sessionStorage.setItem("userType", "company");
+    sessionStorage.setItem("companyName", response.data.data.companyName);
+    sessionStorage.setItem("companyPhone", response.data.data.phone);
     window.dispatchEvent(new Event("storage"));
     navigate('/')
     return response.data;

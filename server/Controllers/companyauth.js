@@ -100,7 +100,7 @@ exports.verifyLogin = async (req, res) => {
       req.session.userType = 'company';
       req.session.company = company;
       req.session.companyId = company._id;
-      return res.status(200).json({success:true, message: 'Login successful' });
+      return res.status(200).json({success:true, message: 'Login successful' ,data: company });
     }
 
     res.status(400).json({success:false, message: 'Invalid OTP' });
