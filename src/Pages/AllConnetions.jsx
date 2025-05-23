@@ -75,7 +75,7 @@ export default function AllConnections() {
   useEffect(() => {
     const fetchConnections = async () => {
         try {
-          const response = await fetchAllConnections(token);
+          const response = await fetchAllConnections();
           if (response && response.data) {
             setConnections(response.data);
           } else {
