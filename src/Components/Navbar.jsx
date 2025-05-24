@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Briefcase, X, Info, Mail, Home, Search, User, LogOut } from "lucide-react";
+import { Menu, Briefcase, X, Info, Mail, Home, Search, User, LogOut,Link  } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 export default function Navbar({userType,setUserType}) {
@@ -56,7 +56,7 @@ export default function Navbar({userType,setUserType}) {
 
           <div className="hidden md:flex space-x-6 font-medium">
           {
-            isAdmin && renderLink("/allconnections", <Connection className="w-4 h-4" />, "All Connections")
+            isAdmin && renderLink("/allconnections", <Link  className="w-4 h-4" />, "All Connections")
           }
             {renderLink("/", <Home className="w-4 h-4" />, "Home")}
             {renderLink("/about", <Info className="w-4 h-4" />, "About")}
