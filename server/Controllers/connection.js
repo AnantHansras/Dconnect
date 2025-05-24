@@ -1,11 +1,35 @@
-const Connection = require('../Models/Connection.js');
+const nodemailer = require('nodemailer');
+const Connection = require('../Models/Connection'); // Adjust the path as needed
 
-// Create a new connection
+// Configure transporter (use your email service credentials securely)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.MAIL_USER, // e.g. admin@example.com
+    pass: process.env.MAIL_PASS, // Use environment variables
+  },
+});
+
 exports.createConnection = async (req, res) => {
   try {
     const connection = new Connection(req.body);
     console.log("Connection data:", connection);
     await connection.save();
+
+    // Extract names
+    const companyName = connection.companyName; // Ensure these fields exist in your schema
+    const jobseekerName = connection.jobSeekerName;
+    const companyPhone = connection.companyPhone
+    const phone = connection.jobSeekerPhone
+    // Email content
+    const mailOptions = {
+      from: process.env.MAIL_USER,
+      to: process.env.ADMIN_EMAIL,
+      subject: 'New Connection Request',
+      text: `Company "${companyName}"(${companyPhone}) wants to connect with Jobseeker "${jobseekerName}(${phone})".`,
+    };
+
+    await transporter.sendMail(mailOptions);
 
     res.status(201).json({
       success: true,
@@ -13,6 +37,7 @@ exports.createConnection = async (req, res) => {
       data: connection,
     });
   } catch (error) {
+    console.error("Error creating connection:", error.message);
     res.status(400).json({
       success: false,
       message: 'Failed to create connection',
@@ -20,6 +45,7 @@ exports.createConnection = async (req, res) => {
     });
   }
 };
+
 
 // Get all connections
 exports.getAllConnections = async (req, res) => {
