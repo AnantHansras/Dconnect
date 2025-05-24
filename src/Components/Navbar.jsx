@@ -14,6 +14,7 @@ export default function Navbar({userType,setUserType}) {
     sessionStorage.removeItem("userType");
     setUserType(null)
     navigate("/");
+    setMenuOpen(false)
   };
 
   const renderLink = (to, icon, label) => (
@@ -46,7 +47,7 @@ export default function Navbar({userType,setUserType}) {
   //   }
   //   return [renderLink("/", <Home className="w-4 h-4" />, "Home")];
   // };
-
+  const isAdmin = sessionStorage.getItem("isAdmin") === "yes";
   return (
     <nav className="bg-[var(--secondary)] text-[var(--foreground)] shadow-md fixed w-full z-50">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,6 +55,9 @@ export default function Navbar({userType,setUserType}) {
           <div className="text-xl font-bold text-[var(--primary)]">Dconnect</div>
 
           <div className="hidden md:flex space-x-6 font-medium">
+          {
+            isAdmin && renderLink("/allconnections", <Connection className="w-4 h-4" />, "All Connections")
+          }
             {renderLink("/", <Home className="w-4 h-4" />, "Home")}
             {renderLink("/about", <Info className="w-4 h-4" />, "About")}
             {renderLink("/contact", <Mail className="w-4 h-4" />, "Contact Us")}

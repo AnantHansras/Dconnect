@@ -1,7 +1,7 @@
 /* "use client" */
 
 import React, { useState } from "react";
-import { MapPin, Mail, Clock, Send } from "lucide-react";
+import { MapPin, Mail, Phone, Send } from "lucide-react";
 import Footer from "../Components/Footer";
 import svg from "../assets/contact.svg";
 
@@ -31,22 +31,23 @@ export default function Contact() {
           {[{
             Icon: MapPin,
             title: "Visit Us",
-            content: "123 Innovation Drive, San Francisco, CA 94103"
+            content: "Jhalana gram JLN Marg, Malviya Nagar, Jaipur, Rajasthan 302017",
+            link: "https://goo.gl/maps/3v1x5Z2g7Qk"
           }, {
             Icon: Mail,
             title: "Email Us",
-            content: "hello@example.com",
-            link: "mailto:hello@example.com"
+            content: "dconnect2u@gmail.com",
+            link: "mailto:dconnect2u@gmail.com"
           }, {
-            Icon: Clock,
-            title: "Working Hours",
-            content: "Mon - Fri: 9 AM - 6 PM"
+            Icon: Phone,
+            title: "Contact Number",
+            content: "7983668008"
           }].map((item, index) => (
             <div key={index} className="border border-[var(--border)] p-6 rounded-lg shadow bg-[var(--card)] flex flex-col justify-center items-center text-center transition duration-300 hover:shadow-lg hover:bg-[var(--card-hover)]" style={{ borderRadius: "var(--radius)" }}>
               <item.Icon className="h-6 w-6 text-[#4A90E2] mb-2" />
               <h3 className="font-bold text-[var(--card-foreground)]">{item.title}</h3>
               {item.link ? (
-                <a href={item.link} className="text-[var(--primary)] underline">
+                <a href={item.link} className="text-[var(--primary)] ">
                   {item.content}
                 </a>
               ) : (

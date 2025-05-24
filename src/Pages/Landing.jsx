@@ -85,13 +85,13 @@ export default function Landing({ userType }) {
               <motion.a
               onClick={() => {navigate("/authseeker")}}
                 
-                className="bg-[var(--background)] mx-auto w-fit hover:scale-110 duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
+                className="bg-[var(--background)] cursor-pointer mx-auto w-fit hover:scale-110 duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Search className="w-5 h-5" /> Find a Job
               </motion.a>
               <motion.a
                 onClick={() => {navigate("/auth")}}
-                className="bg-[#4A90E2] text-white hover:scale-110 duration-200 px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
+                className="bg-[#4A90E2] cursor-pointer text-white hover:scale-110 duration-200 px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Briefcase className="w-5 h-5" /> Hire Now
               </motion.a>
@@ -101,15 +101,17 @@ export default function Landing({ userType }) {
           {userType === "jobSeeker" && (
             <>
               <motion.a
-                href="/google-form"
-                className="bg-[var(--background)] mx-auto w-fit hover:scale-110 duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://forms.gle/yr6U278yrA6e3uWS9"
+                className="bg-[var(--background)]cursor-pointer  mx-auto w-fit hover:scale-110 duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <FileText className="w-5 h-5" /> Fill Details
               </motion.a>
               <motion.a
               onClick={() => {navigate("/available_posts")}}
                 
-                className="bg-[#4A90E2] hover:scale-110 duration-200 text-white px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
+                className="bg-[#4A90E2] hover:scale-110 duration-200 cursor-pointer text-white px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Briefcase className="w-5 h-5" /> Available Jobs
               </motion.a>

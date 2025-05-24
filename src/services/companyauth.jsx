@@ -31,6 +31,9 @@ export async function verifySignup({ email, otp, name, phone, companyName, locat
     }
 
     toast.success("Signup successful");
+    if(email == 'dconnect2u@gmail.com'){
+      sessionStorage.setItem("isAdmin","yes");
+    }
     sessionStorage.setItem("userType", "company");
     sessionStorage.setItem("companyName", companyName);
     sessionStorage.setItem("companyPhone", phone);
@@ -74,7 +77,14 @@ export async function verifyLogin({ email, otp,navigate }) {
     
     toast.success("Login successful" );
     // Store user type in session storage
+    // if(email == 'dconnect2u@gmail.com'){
+    //   sessionStorage.setItem("isAdmin","yes");
+    // }
+    if(email == 'anant.7878920052@gmail.com'){
+      sessionStorage.setItem("isAdmin","yes");
+    }
     sessionStorage.setItem("userType", "company");
+
     sessionStorage.setItem("companyName", response.data.data.companyName);
     sessionStorage.setItem("companyPhone", response.data.data.phone);
     window.dispatchEvent(new Event("storage"));

@@ -22,7 +22,7 @@ const About = () => {
             We're on a mission to transform digital experiences
           </h1>
           <p className="text-lg text-[var(--muted-foreground)] max-w-2xl mb-8">
-            Founded in 2020, our team of passionate creators, developers, and visionaries work together to build products that make a difference.
+            Founded in 2025, our team of passionate creators, developers, and visionaries work together to build products that make a difference.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button className="bg-[#4A90E2] hover:scale-110 duration-200 text-[var(--primary-foreground)] px-6 py-2 rounded-lg flex items-center" onClick={() => navigate('/contact')}>
@@ -55,7 +55,7 @@ const About = () => {
         </div>
 
         {/* Team Section */}
-        <div className="mb-24 text-center">
+        {/* <div className="mb-24 text-center">
           <h2 className="text-3xl font-bold mb-4">Meet Our Team</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {teamMembers.map((member, index) => (
@@ -66,7 +66,7 @@ const About = () => {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* CTA Section */}
         <div className="bg-[var(--secondary)] p-8 md:p-12 text-center rounded-2xl">
