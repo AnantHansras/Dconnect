@@ -12,6 +12,7 @@ export default function Navbar({userType,setUserType}) {
 
   const handleLogout = () => {
     sessionStorage.removeItem("userType");
+    sessionStorage.removeItem("isAdmin")
     setUserType(null)
     navigate("/");
     setMenuOpen(false)

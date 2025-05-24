@@ -513,7 +513,26 @@ const jobTypeOptions = [
                 {filteredJobSeekers.map((js) => (
                   <Card
                     key={js._id}
-                    onClick={()=>{navigate('/profile')}}
+                    onClick={() => {
+    navigate('/profile', {
+      state: {
+        jobSeekerId: js._id,
+        name: js.name,
+        phone: js.phone,
+        city: js.city,
+        age: js.age,
+        job_type: js.job_type,
+        job_type_1: js.job_type_1,
+        experience: js.experience,
+        work_time: js.work_time,
+        job_need: js.job_need,
+        vehicle: js.vehicle,
+        profile_pic: js.profile_pic,
+        email: js.email,
+        vehicle_type: js.vehicle_type
+      }
+    });
+  }}
                     className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
                   >
                     <CardContent className="p-2">
@@ -567,7 +586,26 @@ const jobTypeOptions = [
                         )}
 
                         <div className="pt-1">
-                          <Button className="w-full" size="sm" onClick={() => handleNavigate(js)}>
+                          <Button className="w-full" size="sm" onClick={() => {
+    navigate('/profile', {
+      state: {
+        jobSeekerId: js._id,
+        name: js.name,
+        phone: js.phone,
+        city: js.city,
+        age: js.age,
+        job_type: js.job_type,
+        job_type_1: js.job_type_1,
+        experience: js.experience,
+        work_time: js.work_time,
+        job_need: js.job_need,
+        vehicle: js.vehicle,
+        profile_pic: js.profile_pic,
+        email: js.email,
+        vehicle_type: js.vehicle_type
+      }
+    });
+  }}>
                             View Profile
                           </Button>
                         </div>
