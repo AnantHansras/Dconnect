@@ -2,49 +2,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Phone, Building2, Search, Filter } from "lucide-react";
 import { useState, useEffect } from "react";
 import { fetchAllConnections } from "../services/connectionAPI";
-// Fake data for preview
-const fakeConnections = [
-  {
-    _id: "1",
-    companyName: "Tech Innovations Inc.",
-    companyPhone: "+1 (555) 123-4567",
-    jobSeekerName: "Alex Johnson",
-    jobSeekerPhone: "+1 (555) 987-6543",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-  },
-  {
-    _id: "2",
-    companyName: "Global Solutions Ltd.",
-    companyPhone: "+1 (555) 222-3333",
-    jobSeekerName: "Sam Williams",
-    jobSeekerPhone: "+1 (555) 444-5555",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-  },
-  {
-    _id: "3",
-    companyName: "Creative Designs Co.",
-    companyPhone: "+1 (555) 777-8888",
-    jobSeekerName: "Jamie Taylor",
-    jobSeekerPhone: "+1 (555) 999-0000",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-  },
-  {
-    _id: "4",
-    companyName: "Nexus Enterprises",
-    companyPhone: "+1 (555) 111-2222",
-    jobSeekerName: "Morgan Lee",
-    jobSeekerPhone: "+1 (555) 333-4444",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-  },
-  {
-    _id: "5",
-    companyName: "Future Systems",
-    companyPhone: "+1 (555) 666-7777",
-    jobSeekerName: "Riley Chen",
-    jobSeekerPhone: "+1 (555) 888-9999",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14),
-  },
-];
+
 
 function getInitials(name) {
   return name
@@ -98,16 +56,7 @@ export default function AllConnections() {
               Manage and view all connections between companies and job seekers.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <div className="relative w-full md:w-auto">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-              <input
-                type="search"
-                placeholder="Search connections..."
-                className="pl-8 pr-4 py-2 border rounded-md w-full md:w-[250px] lg:w-[300px] focus:outline-none focus:ring"
-              />
-            </div>
-          </div>
+          
         </div>
 
         <div className="bg-white border px-0 rounded-md shadow-md">

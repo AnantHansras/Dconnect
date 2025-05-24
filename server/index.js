@@ -24,11 +24,11 @@ app.use(session({
 app.use(express.json());
 app.use(cookieParser());
 app.use(
-	cors({
-		origin:"*",
-		// credentials:true,
-	})
-)
+  cors({
+    origin: ["http://localhost:5173/", "https://dconnect-eight.vercel.app/"],
+    credentials: true,
+  })
+);
 
 const {cloudinaryConnect } = require("./Config/cloudinary");
 cloudinaryConnect();

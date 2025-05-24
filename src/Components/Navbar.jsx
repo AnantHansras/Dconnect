@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, Briefcase, X, Info, Mail, Home, Search, User, LogOut,Link  } from "lucide-react";
+import { Menu, Briefcase, X, Info, Mail, Home, Search, User, LogOut,Network  } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 export default function Navbar({userType,setUserType}) {
@@ -55,12 +55,13 @@ export default function Navbar({userType,setUserType}) {
           <div className="text-xl font-bold text-[var(--primary)]">Dconnect</div>
 
           <div className="hidden md:flex space-x-6 font-medium">
-          {
-            isAdmin && renderLink("/allconnections", <Link  className="w-4 h-4" />, "All Connections")
-          }
+          
             {renderLink("/", <Home className="w-4 h-4" />, "Home")}
             {renderLink("/about", <Info className="w-4 h-4" />, "About")}
             {renderLink("/contact", <Mail className="w-4 h-4" />, "Contact Us")}
+            {
+            isAdmin && renderLink("/allconnections", <Network  className="w-4 h-4" />, "All Connections")
+            }
             {userType && (
               <button onClick={handleLogout} className="flex items-center gap-1 hover:text-[#4A90E2]">
                 <LogOut className="w-4 h-4" /> Logout
@@ -78,9 +79,13 @@ export default function Navbar({userType,setUserType}) {
 
       {menuOpen && (
         <div className="md:hidden px-4 pb-4 flex flex-col space-y-2 text-sm font-medium bg-[var(--secondary)]">
+          
           {renderMobileLink("/", <Home className="w-4 h-4" />, "Home")}
           {renderMobileLink("/about", <Info className="w-4 h-4" />, "About")}
           {renderMobileLink("/contact", <Mail className="w-4 h-4" />, "Contact Us")}
+          {
+            isAdmin && renderLink("/allconnections", <Network  className="w-4 h-4" />, "All Connections")
+          }
           {userType && (
             <button onClick={handleLogout} className="flex items-center gap-2 hover:text-[#4A90E2]">
               <LogOut className="w-4 h-4" /> Logout

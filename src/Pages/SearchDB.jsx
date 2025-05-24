@@ -20,8 +20,9 @@
 
 "use client"
 import React, { useEffect, useState } from "react"
-import { MapPin, Clock, Car, Search, Filter, X, ArrowRight } from "lucide-react"
+import { MapPin, Clock, Car, Search, Filter, X, ArrowRight,Briefcase } from "lucide-react"
 import {fetchJobSeekers} from '../services/jobseekerAPI'
+import { useNavigate } from "react-router-dom"
 // Fake data for preview
 const fakeJobSeekers = [
   {
@@ -142,6 +143,17 @@ export default function SearchDB() {
   const [filteredJobSeekers, setFilteredJobSeekers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [jobTypeFilter, setJobTypeFilter] = useState("all");
+  const getJobTypeLabel = (jobType) => {
+  const labels = {
+    "Delivery Boy (Zomato, Swiggy, etc.)": "Delivery Boy",
+    "Driver (Cab, Auto, Private)": "Driver",
+    "Helper (Shop, Warehouse, etc.)": "Helper",
+    "Sales/Marketing (In-store, promotions)": "Sales/Marketing",
+    "Other (please specify)": "Other",
+  };
+  return labels[jobType] || jobType;
+};
 
   // useEffect(() => {
   //   // Simulate API call with fake data
@@ -173,25 +185,36 @@ export default function SearchDB() {
     getAllJobSeekers()
   }, [])
   useEffect(() => {
-    const filtered = jobSeekers.filter((js) => {
-      const matchLocation = searchLocation ? js.city.toLowerCase().includes(searchLocation.toLowerCase()) : true
-      const matchVehicle = vehicleFilter !== "all" ? js.vehicle_type === vehicleFilter : true
-      const matchWorkTime = workTimeFilter !== "all" ? js.work_time === workTimeFilter : true
-      return matchLocation && matchVehicle && matchWorkTime
-    })
-    setFilteredJobSeekers(filtered)
-  }, [searchLocation, vehicleFilter, workTimeFilter, jobSeekers])
+  const filtered = jobSeekers.filter((js) => {
+    const matchLocation = searchLocation ? js.city.toLowerCase().includes(searchLocation.toLowerCase()) : true;
+    const matchVehicle = vehicleFilter !== "all" ? js.vehicle_type === vehicleFilter : true;
+    const matchWorkTime = workTimeFilter !== "all" ? js.work_time === workTimeFilter : true;
+    const matchJobType = jobTypeFilter !== "all" ? js.job_type === jobTypeFilter : true;
+    return matchLocation && matchVehicle && matchWorkTime && matchJobType;
+  });
+  setFilteredJobSeekers(filtered);
+}, [searchLocation, vehicleFilter, workTimeFilter, jobTypeFilter, jobSeekers]);
+
 
   const handleNavigate = (jobSeeker) => {
     // Replace with React Router navigation in real app
-    alert(`Viewing profile for ${jobSeeker.name}`)
+    navigate('/profile')
   }
 
   const resetFilters = () => {
-    setSearchLocation("")
-    setVehicleFilter("all")
-    setWorkTimeFilter("all")
-  }
+  setSearchLocation("");
+  setVehicleFilter("all");
+  setWorkTimeFilter("all");
+  setJobTypeFilter("all");
+};
+
+const jobTypeOptions = [
+  { value: "Delivery Boy (Zomato, Swiggy, etc.)", label: "Delivery Boy" },
+  { value: "Driver (Cab, Auto, Private)", label: "Driver" },
+  { value: "Helper (Shop, Warehouse, etc.)", label: "Helper" },
+  { value: "Sales/Marketing (In-store, promotions)", label: "Sales/Marketing" },
+  { value: "Other (please specify)", label: "Other" },
+];
 
   const getVehicleLabel = (vehicleType) => {
     if (vehicleType.includes("bike")) return "Bike"
@@ -210,11 +233,13 @@ export default function SearchDB() {
   }
 
   const getActiveFiltersCount = () => {
-    let count = 0
-    if (vehicleFilter !== "all") count++
-    if (workTimeFilter !== "all") count++
-    return count
-  }
+  let count = 0;
+  if (vehicleFilter !== "all") count++;
+  if (workTimeFilter !== "all") count++;
+  if (jobTypeFilter !== "all") count++;
+  return count;
+};
+
 
   const formatJobNeedStatus = (status) => {
     if (!status) return "Unknown"
@@ -238,7 +263,7 @@ export default function SearchDB() {
     { value: "Night (10 PM – 6 AM)", label: "Night" },
     { value: "Flexible/Any time", label: "Flexible" },
   ]
-
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       {/* Header */}
@@ -267,11 +292,12 @@ export default function SearchDB() {
                     <Filter className="h-5 w-5" />
                     Filters
                   </CardTitle>
-                  {(vehicleFilter !== "all" || workTimeFilter !== "all" || searchLocation) && (
-                    <Button variant="ghost" size="sm" onClick={resetFilters}>
-                      Clear All
-                    </Button>
-                  )}
+                  {(vehicleFilter !== "all" || workTimeFilter !== "all" || jobTypeFilter !== "all" || searchLocation) && (
+  <Button variant="ghost" size="sm" onClick={resetFilters}>
+    Clear All
+  </Button>
+)}
+
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -353,6 +379,32 @@ export default function SearchDB() {
                     ))}
                   </div>
                 </div>
+                <Separator />
+
+{/* Job Type Filter (Radio) */}
+<div className="space-y-3">
+  <Label className="text-sm font-medium flex items-center gap-2">
+    <Briefcase className="h-4 w-4" />
+    Job Type
+  </Label>
+  <div className="space-y-2">
+    {jobTypeOptions.map((option) => (
+      <div key={option.value} className="flex items-center space-x-2">
+        <input
+          type="radio"
+          id={`job-${option.value}`}
+          checked={jobTypeFilter === option.value}
+          onChange={() => setJobTypeFilter(option.value)}
+          className="form-radio accent-blue-600"
+        />
+        <Label htmlFor={`job-${option.value}`} className="text-sm font-normal">
+          {option.label}
+        </Label>
+      </div>
+    ))}
+  </div>
+</div>
+
               </CardContent>
             </Card>
           </div>
@@ -392,7 +444,7 @@ export default function SearchDB() {
             </div>
 
             {/* Active Filters Display */}
-            {(vehicleFilter !== "all" || workTimeFilter !== "all") && (
+            {(vehicleFilter !== "all" || workTimeFilter !== "all" || jobTypeFilter !== "all") && (
               <div className="flex gap-2 flex-wrap">
                 {vehicleFilter !== "all" && (
                   <Badge variant="secondary" className="flex items-center gap-1">
@@ -412,6 +464,15 @@ export default function SearchDB() {
                     </button>
                   </Badge>
                 )}
+                {jobTypeFilter !== "all" && (
+      <Badge variant="secondary" className="flex items-center gap-1">
+        <Briefcase className="h-3 w-3" />
+        {getJobTypeLabel(jobTypeFilter)}
+        <button onClick={() => setJobTypeFilter("all")} className="ml-1 hover:text-red-600" aria-label="Clear job type filter">
+          <X className="h-3 w-3" />
+        </button>
+      </Badge>
+    )}
               </div>
             )}
 
@@ -452,6 +513,7 @@ export default function SearchDB() {
                 {filteredJobSeekers.map((js) => (
                   <Card
                     key={js._id}
+                    onClick={()=>{navigate('/profile')}}
                     className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
                   >
                     <CardContent className="p-2">
@@ -476,15 +538,16 @@ export default function SearchDB() {
                       </div>
 
                       <div className="mt-2 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-gray-400" />
+                      <div className="flex gap-3"><div className="flex items-center gap-2">
+                          <Clock className="h-6 w-6 text-indigo-400 bg-indigo-100 rounded-full p-1" />
                           <span className="text-sm text-gray-600">{getWorkTimeLabel(js.work_time)}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <Car className="h-4 w-4 text-gray-400" />
+                          <Car className="h-6 w-6 text-indigo-400 bg-indigo-100 rounded-full p-1" />
                           <span className="text-sm text-gray-600">{getVehicleLabel(js.vehicle_type)}</span>
-                        </div>
+                        </div></div>
+                        
 
                         {js.job_need && (
                           <div className="pt-1">
@@ -583,6 +646,31 @@ export default function SearchDB() {
                     ))}
                   </div>
                 </div>
+                  <Separator />
+
+{/* Job Type */}
+<div className="space-y-3">
+  <Label className="text-sm font-medium flex items-center gap-2">
+    <Briefcase className="h-4 w-4" />
+    Job Type
+  </Label>
+  <div className="space-y-2">
+    {jobTypeOptions.map((option) => (
+      <div key={option.value} className="flex items-center space-x-2">
+        <input
+          type="radio"
+          id={`mobile-job-${option.value}`}
+          checked={jobTypeFilter === option.value}
+          onChange={() => setJobTypeFilter(option.value)}
+          className="form-radio accent-blue-600"
+        />
+        <Label htmlFor={`mobile-job-${option.value}`} className="text-sm font-normal">
+          {option.label}
+        </Label>
+      </div>
+    ))}
+  </div>
+</div>
 
                 <div className="pt-4 space-y-3">
                   <Button variant="outline" className="w-full" onClick={resetFilters}>
