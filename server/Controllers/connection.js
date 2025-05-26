@@ -46,7 +46,6 @@ exports.createConnection = async (req, res) => {
   }
 };
 
-
 // Get all connections
 exports.getAllConnections = async (req, res) => {
   try {
