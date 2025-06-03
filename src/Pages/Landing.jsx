@@ -122,14 +122,14 @@ export default function Landing({ userType }) {
             <>
               <motion.a
               onClick={() => {navigate("/postjob")}}
-                className="bg-[var(--background)] w-fit mx-auto hover:scale-110 duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
+                className="bg-[var(--background)] w-fit mx-auto hover:scale-110 cursor-pointer duration-200 border border-[#4A90E2] text-[var(--primary)] px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Briefcase className="w-5 h-5" /> Post Job
               </motion.a>
               <motion.a
               onClick={() => {navigate("/SearchDB")}}
                 
-                className="bg-[#4A90E2] hover:scale-110 duration-200 text-white px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
+                className="bg-[#4A90E2] hover:scale-110 duration-200 text-white cursor-pointer px-6 py-3 rounded-full font-semibold shadow-lg flex items-center gap-2"
               >
                 <Search className="w-5 h-5" /> Search Jobseekers
               </motion.a>
