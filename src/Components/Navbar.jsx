@@ -58,11 +58,14 @@ export default function Navbar({userType,setUserType}) {
           <div className="hidden md:flex space-x-6 font-medium">
           
             {renderLink("/", <Home className="w-4 h-4" />, "Home")}
-            {renderLink("/about", <Info className="w-4 h-4" />, "About")}
-            {renderLink("/contact", <Mail className="w-4 h-4" />, "Contact Us")}
+            {!isAdmin && renderLink("/about", <Info className="w-4 h-4" />, "About")}
+            {!isAdmin && renderLink("/contact", <Mail className="w-4 h-4" />, "Contact Us")}
             {
             isAdmin && renderLink("/allconnections", <Network  className="w-4 h-4" />, "All Connections")
             }
+            {/* {
+            isAdmin && renderLink("/allapplied", <Network  className="w-4 h-4" />, "Job Applicants")
+            } */}
             {userType && (
               <button onClick={handleLogout} className="flex items-center gap-1 hover:text-[#4A90E2]">
                 <LogOut className="w-4 h-4" /> Logout

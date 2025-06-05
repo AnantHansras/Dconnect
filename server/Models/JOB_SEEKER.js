@@ -71,7 +71,7 @@ const Schema = new mongoose.Schema({
     unique: true,
   },
   
-},{ collection: "JOB_SEEKERS" });
+},{ collection: "JOB_SEEKER" });
 
 const User = mongoose.model("JOB_SEEKER", Schema);
 
