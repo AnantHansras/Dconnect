@@ -1,172 +1,35 @@
 
 
-  // useEffect(() => {
-  //   const getAllJobSeekers = async () => {
-  //     setIsLoading(true)
-  //     try {
-  //       const data = await fetchJobSeekers()
-  //       if (data && data.data) {
-  //         setJobSeekers(data.data)
-  //         setFilteredJobSeekers(data.data)
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching job seekers:", error)
-  //     } finally {
-  //       setIsLoading(false)
-  //     }
-  //   }
-  //   getAllJobSeekers()
-  // }, [])
 
 "use client"
 import React, { useEffect, useState } from "react"
-import { MapPin, Clock, Car, Search, Filter, X, ArrowRight,Briefcase } from "lucide-react"
+import { MapPin, Clock, Car, Search, Filter, X, ArrowRight,Briefcase,VenetianMask, User } from "lucide-react"
 import {fetchJobSeekers} from '../services/jobseekerAPI'
 import { useNavigate } from "react-router-dom"
-// Fake data for preview
-const fakeJobSeekers = [
-  {
-    _id: "1",
-    name: "Sarah Johnson",
-    city: "New York, NY",
-    vehicle_type: "Yes – Personal vehicle (Car, Auto, etc.)",
-    work_time: "Morning (6 AM – 12 PM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job immediately",
-  },
-  {
-    _id: "2",
-    name: "Michael Chen",
-    city: "San Francisco, CA",
-    vehicle_type: "Yes – Personal bike (for deliveries)",
-    work_time: "Evening (6 PM – 10 PM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job within 1 week",
-  },
-  {
-    _id: "3",
-    name: "Emily Rodriguez",
-    city: "Austin, TX",
-    vehicle_type: "No – I'm looking for jobs that don't require a vehicle",
-    work_time: "Flexible/Any time",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Exploring job opportunities",
-  },
-  {
-    _id: "4",
-    name: "David Thompson",
-    city: "Chicago, IL",
-    vehicle_type: "Yes – Personal vehicle (Car, Auto, etc.)",
-    work_time: "Night (10 PM – 6 AM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job immediately",
-  },
-  {
-    _id: "5",
-    name: "Lisa Wang",
-    city: "Seattle, WA",
-    vehicle_type: "Yes – Personal bike (for deliveries)",
-    work_time: "Afternoon (12 PM – 6 PM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job within 1 week",
-  },
-  {
-    _id: "6",
-    name: "James Wilson",
-    city: "Miami, FL",
-    vehicle_type: "Yes – Personal vehicle (Car, Auto, etc.)",
-    work_time: "Morning (6 AM – 12 PM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job immediately",
-  },
-  {
-    _id: "7",
-    name: "Anna Martinez",
-    city: "Denver, CO",
-    vehicle_type: "No – I'm looking for jobs that don't require a vehicle",
-    work_time: "Flexible/Any time",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Exploring job opportunities",
-  },
-  {
-    _id: "8",
-    name: "Robert Kim",
-    city: "Boston, MA",
-    vehicle_type: "Yes – Personal bike (for deliveries)",
-    work_time: "Evening (6 PM – 10 PM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job within 1 week",
-  },
-  {
-    _id: "9",
-    name: "Jessica Brown",
-    city: "Los Angeles, CA",
-    vehicle_type: "Yes – Personal vehicle (Car, Auto, etc.)",
-    work_time: "Afternoon (12 PM – 6 PM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job immediately",
-  },
-  {
-    _id: "10",
-    name: "Alex Turner",
-    city: "Portland, OR",
-    vehicle_type: "Yes – Personal bike (for deliveries)",
-    work_time: "Morning (6 AM – 12 PM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Exploring job opportunities",
-  },
-  {
-    _id: "11",
-    name: "Maria Garcia",
-    city: "Phoenix, AZ",
-    vehicle_type: "No – I'm looking for jobs that don't require a vehicle",
-    work_time: "Night (10 PM – 6 AM)",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job within 1 week",
-  },
-  {
-    _id: "12",
-    name: "Kevin Lee",
-    city: "Nashville, TN",
-    vehicle_type: "Yes – Personal vehicle (Car, Auto, etc.)",
-    work_time: "Flexible/Any time",
-    profile_pic: "/placeholder.svg?height=48&width=48",
-    job_need: "Looking for a job immediately",
-  },
-]
-
 export default function SearchDB() {
   const [jobSeekers, setJobSeekers] = useState([])
   const [searchLocation, setSearchLocation] = useState("")
   const [vehicleFilter, setVehicleFilter] = useState("all")
-  const [workTimeFilter, setWorkTimeFilter] = useState("all")
+
   const [filteredJobSeekers, setFilteredJobSeekers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [jobTypeFilter, setJobTypeFilter] = useState("all");
-  const getJobTypeLabel = (jobType) => {
-  const labels = {
-    "Delivery Boy (Zomato, Swiggy, etc.)": "Delivery Boy",
-    "Driver (Cab, Auto, Private)": "Driver",
-    "Helper (Shop, Warehouse, etc.)": "Helper",
-    "Sales/Marketing (In-store, promotions)": "Sales/Marketing",
-    "Other (please specify)": "Other",
-  };
-  return labels[jobType] || jobType;
+ const getJobTypeLabel = (jobType) => {
+  const jobTypeOptions = [
+    { value: "Bike Delivery", label: "Bike Delivery" },
+    { value: "Van Driver", label: "Van Driver" },
+    { value: "Auto Driver", label: "Auto Driver" },
+    { value: "Cab/Taxi Driver", label: "Cab Driver" },
+    { value: "Tempo/Truck Driver", label: "Truck Driver" },
+    { value: "Any available opportunity", label: "Other" },
+  ];
+
+  const option = jobTypeOptions.find((opt) => opt.value === jobType);
+  return option ? option.label : jobType;
 };
 
-  // useEffect(() => {
-  //   // Simulate API call with fake data
-  //   const getAllJobSeekers = async () => {
-  //     setIsLoading(true)
-  //     // Simulate loading delay
-  //     await new Promise((resolve) => setTimeout(resolve, 800))
-  //     setJobSeekers(fakeJobSeekers)
-  //     setFilteredJobSeekers(fakeJobSeekers)
-  //     setIsLoading(false)
-  //   }
-  //   getAllJobSeekers()
-  // }, [])
+
     useEffect(() => {
     const getAllJobSeekers = async () => {
       setIsLoading(true)
@@ -188,12 +51,11 @@ export default function SearchDB() {
   const filtered = jobSeekers.filter((js) => {
     const matchLocation = searchLocation ? js.city.toLowerCase().includes(searchLocation.toLowerCase()) : true;
     const matchVehicle = vehicleFilter !== "all" ? js.vehicle_type === vehicleFilter : true;
-    const matchWorkTime = workTimeFilter !== "all" ? js.work_time === workTimeFilter : true;
     const matchJobType = jobTypeFilter !== "all" ? js.job_type === jobTypeFilter : true;
-    return matchLocation && matchVehicle && matchWorkTime && matchJobType;
+    return matchLocation && matchVehicle && matchJobType;
   });
   setFilteredJobSeekers(filtered);
-}, [searchLocation, vehicleFilter, workTimeFilter, jobTypeFilter, jobSeekers]);
+}, [searchLocation, vehicleFilter, jobTypeFilter, jobSeekers]);
 
 
   const handleNavigate = (jobSeeker) => {
@@ -204,65 +66,39 @@ export default function SearchDB() {
   const resetFilters = () => {
   setSearchLocation("");
   setVehicleFilter("all");
-  setWorkTimeFilter("all");
   setJobTypeFilter("all");
 };
 
 const jobTypeOptions = [
-  { value: "Delivery Boy (Zomato, Swiggy, etc.)", label: "Delivery Boy" },
-  { value: "Driver (Cab, Auto, Private)", label: "Driver" },
-  { value: "Helper (Shop, Warehouse, etc.)", label: "Helper" },
-  { value: "Sales/Marketing (In-store, promotions)", label: "Sales/Marketing" },
-  { value: "Other (please specify)", label: "Other" },
+  { value: "Bike Delivery", label: "Bike Delivery" },
+  { value: "Van Driver", label: "Van Driver" },
+  { value: "Auto Driver", label: "Auto Driver" },
+  { value: "Cab/Taxi Driver", label: "Cab/Taxi Driver" },
+  { value: "Tempo/Truck Driver", label: "Tempo/Truck Driver" },
+  { value: "Any available opportunity", label: "Other" },
 ];
 
-  const getVehicleLabel = (vehicleType) => {
-    if (vehicleType.includes("bike")) return "Bike"
-    if (vehicleType.includes("vehicle")) return "Car/Auto"
-    if (vehicleType.includes("No")) return "No Vehicle"
-    return vehicleType
+  const getVehicleLabel = (vehicleFilter) => {
+    if (vehicleFilter == "No") return "Does Not Own Vehicle"
+    return "Owns Vehicle"
+  }
+  const getVehicleLabel2 = (js) => {
+    if (js.vehicle_type == "No") return "No vehicle"
+    return js.vehicle
   }
 
-  const getWorkTimeLabel = (workTime) => {
-    if (workTime.includes("Morning")) return "Morning"
-    if (workTime.includes("Night")) return "Night"
-    if (workTime.includes("Afternoon")) return "Afternoon"
-    if (workTime.includes("Evening")) return "Evening"
-    if (workTime.includes("Flexible")) return "Flexible"
-    return workTime
-  }
 
   const getActiveFiltersCount = () => {
   let count = 0;
   if (vehicleFilter !== "all") count++;
-  if (workTimeFilter !== "all") count++;
   if (jobTypeFilter !== "all") count++;
   return count;
 };
-
-
-  const formatJobNeedStatus = (status) => {
-    if (!status) return "Unknown"
-    if (status.toLowerCase().includes("immediately")) return "Available Now"
-    if (status.toLowerCase().includes("within 1 week")) return "Available Soon"
-    return "Exploring Options"
-  }
-
   const vehicleOptions = [
-    { value: "all", label: "All Vehicle Types" },
-    { value: "Yes – Personal bike (for deliveries)", label: "Bike" },
-    { value: "Yes – Personal vehicle (Car, Auto, etc.)", label: "Car/Auto" },
-    { value: "No – I'm looking for jobs that don't require a vehicle", label: "No Vehicle" },
+    { value: "Yes", label: "Yes" },
+    { value: "No", label: "No" },
   ]
 
-  const workTimeOptions = [
-    { value: "all", label: "All Work Times" },
-    { value: "Morning (6 AM – 12 PM)", label: "Morning" },
-    { value: "Afternoon (12 PM – 6 PM)", label: "Afternoon" },
-    { value: "Evening (6 PM – 10 PM)", label: "Evening" },
-    { value: "Night (10 PM – 6 AM)", label: "Night" },
-    { value: "Flexible/Any time", label: "Flexible" },
-  ]
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
@@ -292,7 +128,7 @@ const jobTypeOptions = [
                     <Filter className="h-5 w-5" />
                     Filters
                   </CardTitle>
-                  {(vehicleFilter !== "all" || workTimeFilter !== "all" || jobTypeFilter !== "all" || searchLocation) && (
+                  {(vehicleFilter !== "all" || jobTypeFilter !== "all" || searchLocation) && (
   <Button variant="ghost" size="sm" onClick={resetFilters}>
     Clear All
   </Button>
@@ -356,30 +192,7 @@ const jobTypeOptions = [
 
                 <Separator />
 
-                {/* Work Time Filter (Radio) */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Work Time
-                  </Label>
-                  <div className="space-y-2">
-                    {workTimeOptions.map((option) => (
-                      <div key={option.value} className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id={`time-${option.value}`}
-                          checked={workTimeFilter === option.value}
-                          onChange={() => setWorkTimeFilter(option.value)}
-                          className="form-radio accent-blue-600"
-                        />
-                        <Label htmlFor={`time-${option.value}`} className="text-sm font-normal">
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <Separator />
+                
 
 {/* Job Type Filter (Radio) */}
 <div className="space-y-3">
@@ -444,22 +257,13 @@ const jobTypeOptions = [
             </div>
 
             {/* Active Filters Display */}
-            {(vehicleFilter !== "all" || workTimeFilter !== "all" || jobTypeFilter !== "all") && (
+            {(vehicleFilter !== "all"  || jobTypeFilter !== "all") && (
               <div className="flex gap-2 flex-wrap">
                 {vehicleFilter !== "all" && (
                   <Badge variant="secondary" className="flex items-center gap-1">
                     <Car className="h-3 w-3" />
                     {getVehicleLabel(vehicleFilter)}
                     <button onClick={() => setVehicleFilter("all")} className="ml-1 hover:text-red-600" aria-label="Clear vehicle filter">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                )}
-                {workTimeFilter !== "all" && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {getWorkTimeLabel(workTimeFilter)}
-                    <button onClick={() => setWorkTimeFilter("all")} className="ml-1 hover:text-red-600" aria-label="Clear work time filter">
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
@@ -522,12 +326,15 @@ const jobTypeOptions = [
         city: js.city,
         age: js.age,
         job_type: js.job_type,
-        job_type_1: js.job_type_1,
+        prior_exp:js.prior_exp,
+        //job_type_1: js.job_type_1,
         experience: js.experience,
-        work_time: js.work_time,
-        job_need: js.job_need,
+        //work_time: js.work_time,
+        //job_need: js.job_need,
+        gender:js.gender,
         vehicle: js.vehicle,
-        profile_pic: js.profile_pic,
+        job_timing:js.job_timing,
+        //profile_pic: js.profile_pic,
         email: js.email,
         vehicle_type: js.vehicle_type
       }
@@ -535,7 +342,7 @@ const jobTypeOptions = [
   }}
                     className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
                   >
-                    <CardContent className="p-2">
+                    <CardContent className="p-0">
                       <div className="flex items-start gap-4">
                         <Avatar className="h-16 w-16 ">
                           {/* <AvatarImage src={js.profile_pic || "/placeholder.svg"} alt={js.name} /> */}
@@ -557,18 +364,19 @@ const jobTypeOptions = [
                       </div>
 
                       <div className="mt-2 space-y-3">
-                      <div className="flex gap-3"><div className="flex items-center gap-2">
-                          <Clock className="h-6 w-6 text-indigo-400 bg-indigo-100 rounded-full p-1" />
-                          <span className="text-sm text-gray-600">{getWorkTimeLabel(js.work_time)}</span>
+                      <div className="flex gap-1">
+                      <div className="flex items-center gap-1">
+                          <Briefcase className="h-6 w-6 text-indigo-400 bg-indigo-100 rounded-full p-1" />
+                          <span className="text-sm text-gray-600">{getJobTypeLabel(js.job_type)}</span>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Car className="h-6 w-6 text-indigo-400 bg-indigo-100 rounded-full p-1" />
-                          <span className="text-sm text-gray-600">{getVehicleLabel(js.vehicle_type)}</span>
+                          <span className="text-sm text-gray-600">{getVehicleLabel2(js)}</span>
                         </div></div>
                         
 
-                        {js.job_need && (
+                        {/* {js.job_need && (
                           <div className="pt-1">
                             <Badge
                               variant="outline"
@@ -583,7 +391,7 @@ const jobTypeOptions = [
                               {formatJobNeedStatus(js.job_need)}
                             </Badge>
                           </div>
-                        )}
+                        )} */}
 
                         <div className="pt-1">
                           <Button className="w-full" size="sm" onClick={() => {
@@ -595,12 +403,15 @@ const jobTypeOptions = [
         city: js.city,
         age: js.age,
         job_type: js.job_type,
-        job_type_1: js.job_type_1,
+        prior_exp:js.prior_exp,
+        //job_type_1: js.job_type_1,
         experience: js.experience,
-        work_time: js.work_time,
-        job_need: js.job_need,
+        //work_time: js.work_time,
+        //job_need: js.job_need,
+        gender:js.gender,
         vehicle: js.vehicle,
-        profile_pic: js.profile_pic,
+        job_timing:js.job_timing,
+        //profile_pic: js.profile_pic,
         email: js.email,
         vehicle_type: js.vehicle_type
       }
@@ -661,30 +472,7 @@ const jobTypeOptions = [
 
                 <Separator />
 
-                {/* Work Time */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Work Time
-                  </Label>
-                  <div className="space-y-2">
-                    {workTimeOptions.map((option) => (
-                      <div key={option.value} className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id={`mobile-time-${option.value}`}
-                          checked={workTimeFilter === option.value}
-                          onChange={() => setWorkTimeFilter(option.value)}
-                          className="form-radio accent-blue-600"
-                        />
-                        <Label htmlFor={`mobile-time-${option.value}`} className="text-sm font-normal">
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                  <Separator />
+                
 
 {/* Job Type */}
 <div className="space-y-3">

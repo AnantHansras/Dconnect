@@ -1,10 +1,12 @@
 "use client"
 import { useLocation } from "react-router-dom"
 import { makeConnection } from "../services/connectionAPI"
+import { useNavigate } from "react-router-dom"
 import {
   ArrowLeft,
   Phone,
   MapPin,
+  User,
   Calendar,
   Briefcase,
   Car,
@@ -26,12 +28,11 @@ const Profile = () => {
     city,
     age,
     job_type,
-    job_type_1,
+    prior_exp,
+    gender,
     experience,
-    work_time,
-    job_need,
+    job_timing,
     vehicle,
-    profile_pic,
     email,
     vehicle_type
   } = state || {}
@@ -97,6 +98,7 @@ const Profile = () => {
     },
   }
   const [showCheck, setShowCheck] = useState(false);
+  const navigate = useNavigate();
   const companyName = sessionStorage.getItem("companyName");
   const companyPhone = sessionStorage.getItem("companyPhone");
   const handleClick = async () => {
@@ -119,7 +121,7 @@ const Profile = () => {
           <div className="bg-gradient-to-r from-violet-500 to-indigo-600 p-8 text-center relative pt-12">
           <motion.button
           className="mb-4 text-slate-100 hover:text-slate-300 flex items-center font-medium -ml-4 -mt-4"
-          onClick={() => window.history.back()}
+          onClick={() => navigate('/SearchDB')}
           whileHover={{ x: -5 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -131,24 +133,40 @@ const Profile = () => {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <div className="w-28 h-28 bg-white rounded-full border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
-                {data.profile_pic ? (
-                  <img
-                    src={data.profile_pic || "/placeholder.svg"}
-                    alt={name}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <span className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-indigo-600 text-transparent bg-clip-text">
-                    {getInitials(name)}
-                  </span>
-                )}
-              </div>
-              <div
-                className={`absolute -bottom-2 right-0 ${getAvailabilityColor(job_need)} w-6 h-6 rounded-full border-2 border-white flex items-center justify-center`}
-              >
-                <span className="sr-only">{formatJobNeedStatus(job_need)}</span>
-              </div>
+              <div className="relative w-28 h-28 flex items-center justify-center">
+  {/* Thin green ring */}
+  <div className="absolute inset-0 rounded-full border-4 border-green-500"></div>
+
+  {/* Avatar */}
+  <div className="w-28 h-28 bg-white rounded-full border-2 border-white shadow-md flex items-center justify-center overflow-hidden">
+    {data.profile_pic ? (
+      <img
+        src={data.profile_pic || "/placeholder.svg"}
+        alt={name}
+        className="w-full h-full object-cover rounded-full"
+      />
+    ) : (
+      <span className="text-2xl font-bold bg-gradient-to-r from-violet-500 to-indigo-600 text-transparent bg-clip-text">
+        {getInitials(name)}
+      </span>
+    )}
+  </div>
+
+  {/* Tick icon */}
+  <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-sm">
+    <svg
+      className="w-4 h-4 text-green-600"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={3}
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  </div>
+</div>
+
+              
             </motion.div>
             <motion.h2
               className="text-2xl font-bold text-white mt-2"
@@ -164,7 +182,7 @@ const Profile = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              {formatJobNeedStatus(job_need)}
+            Available
             </motion.span>
           </div>
 
@@ -177,9 +195,9 @@ const Profile = () => {
                   whileHover={{ x: 5 }}
                 >
                   <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                    <Mail className="w-4 h-4 text-indigo-600" />
+                    <User className="w-4 h-4 text-indigo-600" />
                   </div>
-                  <span className="text-slate-700 flex-1">{email}</span>
+                  <span className="text-slate-700 flex-1">{gender}</span>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </motion.div>
 
@@ -188,9 +206,9 @@ const Profile = () => {
                   whileHover={{ x: 5 }}
                 >
                   <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                    <Phone className="w-4 h-4 text-indigo-600" />
+                    <Briefcase className="w-4 h-4 text-indigo-600" />
                   </div>
-                  <span className="text-slate-700 flex-1">{phone}</span>
+                  <span className="text-slate-700 flex-1">{job_timing}</span>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </motion.div>
 
@@ -243,61 +261,28 @@ const Profile = () => {
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-3">
-              <h3 className="text-slate-500 font-semibold text-sm uppercase tracking-wider">Job Preferences</h3>
-              <div className="p-4 bg-slate-50 rounded-xl">
-                <div className="flex items-start mb-6">
+              <h3 className="text-slate-500 font-semibold text-sm uppercase tracking-wider">Professional Details</h3>
+              <div className=" flex justify-normal gap-4">
+                <div className="flex items-start  p-4 rounded-xl bg-slate-50">
                   <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 mt-1">
                     <Briefcase className="w-4 h-4 text-indigo-600" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs text-slate-500">Job Type</span>
-                    {
-                      job_type === "Other (please specify)" ? (
-                        <span className="text-slate-700 font-medium text-sm">
-                          {job_type_1}
-                        </span>
-                      ) : (
                         <span className="text-slate-700 font-medium text-sm">
                           {job_type}
                         </span>
-                      )
-                    }
                   </div>
                 </div>
-                <div className="flex items-center mb-2">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                      <Heart className="w-4 h-4 text-indigo-600" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-slate-500">Availability</span>
-                      <span className="text-slate-700 font-medium text-sm">{formatJobNeedStatus(job_need)}</span>
-                    </div>
+                <div className="flex items-start flex-[1] p-4  rounded-xl bg-slate-50">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 mt-1">
+                    <Award className="w-4 h-4 text-indigo-600" />
                   </div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="space-y-3">
-              <h3 className="text-slate-500 font-semibold text-sm uppercase tracking-wider">Professional Details</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-slate-50 rounded-xl">
                   <div className="flex flex-col">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-                      <Award className="w-5 h-5 text-indigo-600" />
-                    </div>
                     <span className="text-xs text-slate-500">Experience</span>
                     <span className="text-slate-700 font-medium text-sm">
-                      {experience.includes("No") ? "No Experience" : "Experienced"}
+                      {prior_exp.includes("No") ? "No Experience" : "Experienced"}
                     </span>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-slate-50 rounded-xl">
-                  <div className="flex flex-col">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-                      <Clock className="w-5 h-5 text-indigo-600" />
-                    </div>
-                    <span className="text-xs text-slate-500">Work Hours</span>
-                    <span className="text-slate-700 font-medium text-sm">{work_time}</span>
                   </div>
                 </div>
               </div>
@@ -311,7 +296,7 @@ const Profile = () => {
                     <Info className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-slate-700 text-sm font-medium ">{experience}</span>
+                    <span className="text-slate-700 text-sm font-medium ">{prior_exp === 'No' ? 'The candidate currently has no prior work experience.' : experience}</span>
                   </div>
                 </div>
               </div>
