@@ -184,11 +184,12 @@ const formatDate = (date) => {
 
 const getJobTypeColor = (jobType) => {
   const colors = {
-    "Delivery Boy (Zomato, Swiggy, etc.)": "bg-orange-100 text-orange-800",
-    "Driver (Cab, Auto, Private)": "bg-blue-100 text-blue-800",
-    "Helper (Shop, Warehouse, etc.)": "bg-green-100 text-green-800",
-    "Sales/Marketing (In-store, promotions)": "bg-purple-100 text-purple-800",
-    "Other (please specify)": "bg-gray-100 text-gray-800",
+    "Bike Delivery": "bg-orange-100 text-orange-800",
+    "Van Driver": "bg-blue-100 text-blue-800",
+    "Auto Driver": "bg-purple-100 text-purple-800",
+    "Tempo/Truck Driver": "bg-green-100 text-green-800",
+    "Cab/Taxi Driver": "bg-purple-100 text-purple-800",
+    "Other": "bg-gray-100 text-gray-800",
   };
   return colors[jobType] || "bg-gray-100 text-gray-800";
 };

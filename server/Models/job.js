@@ -15,11 +15,12 @@ const jobSchema = new mongoose.Schema({
   jobType: {
     type: String,
     enum: [
-      "Delivery Boy (Zomato, Swiggy, etc.)",
-      "Driver (Cab, Auto, Private)",
-      "Helper (Shop, Warehouse, etc.)",
-      "Sales/Marketing (In-store, promotions)",
-      "Other (please specify)",
+      "Bike Delivery",
+      "Van Driver",
+      "Auto Driver",
+      "Cab/Taxi Driver",
+      "Tempo/Truck Driver",
+      "Other",
     ],
     required: true,
   },
@@ -41,10 +42,6 @@ const jobSchema = new mongoose.Schema({
       "Night (10 PM – 6 AM)",
       "Flexible/Any time",
     ],
-    required: true,
-  },
-  startDate: {
-    type: Date,
     required: true,
   },
   minAge: {

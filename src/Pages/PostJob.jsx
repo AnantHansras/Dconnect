@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { postJob } from "../services/jobAPI";
 import {
-  CalendarIcon,
   MapPinIcon,
   BriefcaseIcon,
   UsersIcon,
@@ -20,11 +19,12 @@ const formSchema = z
     companyName: z.string().min(2, { message: "Company name must be at least 2 characters." }),
     location: z.string().min(2, { message: "Location is required." }),
     jobType: z.enum([
-      "Delivery Boy (Zomato, Swiggy, etc.)",
-      "Driver (Cab, Auto, Private)",
-      "Helper (Shop, Warehouse, etc.)",
-      "Sales/Marketing (In-store, promotions)",
-      "Other (please specify)",
+      "Bike Delivery",
+        "Van Driver",
+        "Auto Driver",
+        "Cab/Taxi Driver",
+        "Tempo/Truck Driver",
+        "Other",
     ]),
     numberOfPeople: z.coerce.number().int().positive({ message: "Please enter a positive number." }),
     expectedSalary: z.string().min(1, { message: "Expected salary is required." }),
@@ -35,7 +35,6 @@ const formSchema = z
       "Night (10 PM – 6 AM)",
       "Flexible/Any time",
     ]),
-    startDate: z.date({ required_error: "Please select a start date." }),
     minAge: z.coerce.number().int().min(16, { message: "Minimum age must be at least 16." }),
     maxAge: z.coerce.number().int().min(16, { message: "Maximum age must be at least 16." }),
     description: z.string().min(10, { message: "Job description must be at least 10 characters." }),
@@ -48,7 +47,6 @@ const formSchema = z
 
 export default function PostJob() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   const {
     register,
@@ -62,7 +60,7 @@ export default function PostJob() {
     defaultValues: {
       companyName: "",
       location: "",
-      jobType: "Delivery Boy (Zomato, Swiggy, etc.)",
+      jobType: "Bike Delivery",
       numberOfPeople: 1,
       expectedSalary: "",
       work_time: "Morning (6 AM – 12 PM)",
@@ -117,11 +115,12 @@ export default function PostJob() {
     {/* Salary & Work Time */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <SelectField label="Job Type" options={[
-        "Delivery Boy (Zomato, Swiggy, etc.)",
-        "Driver (Cab, Auto, Private)",
-        "Helper (Shop, Warehouse, etc.)",
-        "Sales/Marketing (In-store, promotions)",
-        "Other (please specify)",
+        "Bike Delivery",
+        "Van Driver",
+        "Auto Driver",
+        "Cab/Taxi Driver",
+        "Tempo/Truck Driver",
+        "Other",
       ]} {...register("jobType")} error={errors.jobType?.message} />
       <SelectField label="Work Time" options={[
         "Morning (6 AM – 12 PM)",
@@ -130,27 +129,6 @@ export default function PostJob() {
         "Night (10 PM – 6 AM)",
         "Flexible/Any time",
       ]} {...register("work_time")} error={errors.work_time?.message} />
-    </div>
-
-    {/* Start Date */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-      <button
-        type="button"
-        onClick={() => setDatePickerVisible(!datePickerVisible)}
-        className="w-full flex justify-between items-center px-4 py-2 border rounded-md bg-white text-gray-600 hover:bg-gray-100 transition"
-      >
-        {startDate ? format(startDate, "PPP") : "Pick a date"}
-        <CalendarIcon className="h-5 w-5 text-indigo-500" />
-      </button>
-      {datePickerVisible && (
-        <input
-          type="date"
-          onChange={(e) => setValue("startDate", new Date(e.target.value))}
-          className="mt-3 w-full border rounded-md px-3 py-2"
-        />
-      )}
-      {errors.startDate && <p className="text-red-500 text-sm mt-2">{errors.startDate.message}</p>}
     </div>
 
     {/* Age Range */}
