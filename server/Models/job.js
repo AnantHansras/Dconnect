@@ -60,11 +60,6 @@ const jobSchema = new mongoose.Schema({
       message: "Maximum age must be greater than or equal to minimum age",
     },
   },
-  description: {
-    type: String,
-    required: true,
-    minlength: 10,
-  },
   requirements: {
     type: String,
     required: true,

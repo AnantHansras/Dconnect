@@ -11,7 +11,7 @@ import {
   MapPinIcon,
   BriefcaseIcon,
   UsersIcon,
-  DollarSignIcon,
+  IndianRupee,
 } from "lucide-react";
 
 const formSchema = z
@@ -37,7 +37,6 @@ const formSchema = z
     ]),
     minAge: z.coerce.number().int().min(16, { message: "Minimum age must be at least 16." }),
     maxAge: z.coerce.number().int().min(16, { message: "Maximum age must be at least 16." }),
-    description: z.string().min(10, { message: "Job description must be at least 10 characters." }),
     requirements: z.string().min(10, { message: "Job requirements must be at least 10 characters." }),
   })
   .refine((data) => data.maxAge >= data.minAge, {
@@ -66,12 +65,10 @@ export default function PostJob() {
       work_time: "Morning (6 AM – 12 PM)",
       minAge: 18,
       maxAge: 65,
-      description: "",
       requirements: "",
     },
   });
 
-  const startDate = watch("startDate");
   const [showCheck, setShowCheck] = useState(false);
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -102,13 +99,13 @@ export default function PostJob() {
     {/* Company & Location */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <InputField label="Company Name" icon={<BriefcaseIcon className="w-5 h-5 text-indigo-500" />} {...register("companyName")} error={errors.companyName?.message} placeholder="e.g. Acme Inc." />
-      <InputField label="Location" icon={<MapPinIcon className="w-5 h-5 text-indigo-500" />} {...register("location")} error={errors.location?.message} placeholder="e.g. Mumbai, India" />
+      <InputField label="Location" icon={<MapPinIcon className="w-5 h-5 text-indigo-500" />} {...register("location")} error={errors.location?.message} placeholder="e.g. Malviya Nagar,Jaipur" />
     </div>
 
     {/* Job Type & People Needed */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       
-      <InputField label="Expected Salary" icon={<DollarSignIcon className="w-5 h-5 text-indigo-500" />} {...register("expectedSalary")} error={errors.expectedSalary?.message} placeholder="e.g. ₹15,000/month" />
+      <InputField label="Expected Salary" icon={<IndianRupee className="w-5 h-5 text-indigo-500" />} {...register("expectedSalary")} error={errors.expectedSalary?.message} placeholder="e.g. ₹15,000/month" />
       <InputField label="Number of People Needed" type="number" icon={<UsersIcon className="w-5 h-5 text-indigo-500" />} {...register("numberOfPeople")} error={errors.numberOfPeople?.message} min="1" />
     </div>
 
@@ -138,7 +135,6 @@ export default function PostJob() {
     </div>
 
     {/* Description & Requirements */}
-    <TextAreaField label="Job Description" {...register("description")} error={errors.description?.message} placeholder="Responsibilities, duties..." />
     <TextAreaField label="Job Requirements" {...register("requirements")} error={errors.requirements?.message} placeholder="Qualifications, experience..." />
 
     {/* Submit Button */}

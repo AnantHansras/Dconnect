@@ -118,12 +118,12 @@ const mockJobs = [
 ]
 
 const jobTypes = [
-  "All Types",
-  "Delivery Boy (Zomato, Swiggy, etc.)",
-  "Driver (Cab, Auto, Private)",
-  "Helper (Shop, Warehouse, etc.)",
-  "Sales/Marketing (In-store, promotions)",
-  "Other (please specify)",
+  "Bike Delivery",
+  "Van Driver",
+  "Auto Driver",
+  "Cab/Taxi Driver",
+  "Tempo/Truck Driver",
+  "Other",
 ]
 
 const workTimes = [
@@ -193,10 +193,6 @@ const getJobTypeColor = (jobType) => {
   };
   return colors[jobType] || "bg-gray-100 text-gray-800";
 };
-
- 
-
- 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       {/* Header */}
@@ -321,8 +317,6 @@ const getJobTypeColor = (jobType) => {
 
               <CardContent>
                 <div className="space-y-4">
-                  <p className="text-gray-700 text-sm leading-relaxed">{job.description}</p>
-
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center text-gray-600">
                       <IndianRupee className="h-4 w-4 mr-2 text-green-600" />
@@ -335,10 +329,6 @@ const getJobTypeColor = (jobType) => {
                     <div className="flex items-center text-gray-600">
                       <Clock className="h-4 w-4 mr-2 text-purple-600" />
                       <span>{job.work_time}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <Calendar className="h-4 w-4 mr-2 text-orange-600" />
-                      <span>Start: {formatDate(job.startDate)}</span>
                     </div>
                   </div>
 
