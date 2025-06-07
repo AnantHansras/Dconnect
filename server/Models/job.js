@@ -65,6 +65,10 @@ const jobSchema = new mongoose.Schema({
     required: true,
     minlength: 10,
   },
+  companyPhone: {
+    type: String,
+    required: true,
+  },
 }, {
   timestamps: true, // adds createdAt and updatedAt
 });

@@ -80,6 +80,8 @@ export async function verifyLogin({ email, otp, navigate }) {
 
     toast.success("Login successful");
     sessionStorage.setItem("userType", "jobSeeker");
+    sessionStorage.setItem("jobSeekerName", response.data.data.full_name);
+    sessionStorage.setItem("jobSeekerPhone", response.data.data.whatsapp_number);
     window.dispatchEvent(new Event("storage"));
     navigate("/");
     return response.data;
@@ -101,6 +103,8 @@ export async function verifySignup({ email, full_name, whatsapp_number,otp, navi
 
     toast.success('Signup successful');
     sessionStorage.setItem('userType', 'jobSeeker');
+    sessionStorage.setItem("jobSeekerName", full_name);
+    sessionStorage.setItem("jobSeekerPhone", whatsapp_number);
     window.dispatchEvent(new Event('storage'));
     navigate('/');
     return response.data;

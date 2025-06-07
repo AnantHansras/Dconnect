@@ -1,9 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useMemo,useEffect } from "react"
-import { Search, MapPin, Clock, Users,IndianRupee, Calendar, DollarSign, Filter } from "lucide-react"
-import { fetchAllJobs } from "../services/jobAPI"
-
+import { useState, useMemo, useEffect } from "react";
+import {
+  Search,
+  MapPin,
+  Clock,
+  Users,
+  IndianRupee,
+  Calendar,
+  DollarSign,
+  Filter,
+} from "lucide-react";
+import { fetchAllJobs } from "../services/jobAPI";
+import { motion } from "framer-motion";
 
 // Mock data based on the job schema
 const mockJobs = [
@@ -115,7 +124,7 @@ const mockJobs = [
     createdAt: new Date("2024-01-11"),
     updatedAt: new Date("2024-01-11"),
   },
-]
+];
 
 const jobTypes = [
   "Bike Delivery",
@@ -124,7 +133,7 @@ const jobTypes = [
   "Cab/Taxi Driver",
   "Tempo/Truck Driver",
   "Other",
-]
+];
 
 const workTimes = [
   "All Times",
@@ -133,74 +142,91 @@ const workTimes = [
   "Evening (6 PM – 10 PM)",
   "Night (10 PM – 6 AM)",
   "Flexible/Any time",
-]
+];
 
 export default function JobsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedJobType, setSelectedJobType] = useState("All Types")
-  const [selectedWorkTime, setSelectedWorkTime] = useState("All Times")
-  const [selectedLocation, setSelectedLocation] = useState("")
-  const [showFilters, setShowFilters] = useState(false)
-   const [jobs, setJobs] = useState([])
-    useEffect(() => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedJobType, setSelectedJobType] = useState("All Types");
+  const [selectedWorkTime, setSelectedWorkTime] = useState("All Times");
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [jobs, setJobs] = useState([]);
+  useEffect(() => {
     const fetchFilteredJobs = async () => {
       try {
-        const response = await fetchAllJobs()
-        
-        setJobs(response.data)
-      } catch (error) {
-        console.error("Error fetching jobs:", error)
-      }
-    }
+        const response = await fetchAllJobs();
 
-    fetchFilteredJobs()
-  }, [])
+        setJobs(response.data);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
+    fetchFilteredJobs();
+  }, []);
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
       const matchesSearch =
         job.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchTerm.toLowerCase())
+        job.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesJobType = selectedJobType === "All Types" || job.jobType === selectedJobType
-      const matchesWorkTime = selectedWorkTime === "All Times" || job.work_time === selectedWorkTime
-      const matchesLocation = !selectedLocation || job.location.toLowerCase().includes(selectedLocation.toLowerCase())
+      const matchesJobType =
+        selectedJobType === "All Types" || job.jobType === selectedJobType;
+      const matchesWorkTime =
+        selectedWorkTime === "All Times" || job.work_time === selectedWorkTime;
+      const matchesLocation =
+        !selectedLocation ||
+        job.location.toLowerCase().includes(selectedLocation.toLowerCase());
 
-      return matchesSearch && matchesJobType && matchesWorkTime && matchesLocation
-    })
-  }, [jobs, searchTerm, selectedJobType, selectedWorkTime, selectedLocation])
+      return (
+        matchesSearch && matchesJobType && matchesWorkTime && matchesLocation
+      );
+    });
+  }, [jobs, searchTerm, selectedJobType, selectedWorkTime, selectedLocation]);
 
-const formatDate = (date) => {
-  const d = new Date(date); // ensure it's a Date object
-  if (isNaN(d)) return "Invalid Date"; // optional safety check
+  const formatDate = (date) => {
+    const d = new Date(date); // ensure it's a Date object
+    if (isNaN(d)) return "Invalid Date"; // optional safety check
 
-  return d.toLocaleDateString("en-IN", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
-
-const getJobTypeColor = (jobType) => {
-  const colors = {
-    "Bike Delivery": "bg-orange-100 text-orange-800",
-    "Van Driver": "bg-blue-100 text-blue-800",
-    "Auto Driver": "bg-purple-100 text-purple-800",
-    "Tempo/Truck Driver": "bg-green-100 text-green-800",
-    "Cab/Taxi Driver": "bg-purple-100 text-purple-800",
-    "Other": "bg-gray-100 text-gray-800",
+    return d.toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
-  return colors[jobType] || "bg-gray-100 text-gray-800";
-};
+
+  const getJobTypeColor = (jobType) => {
+    const colors = {
+      "Bike Delivery": "bg-orange-100 text-orange-800",
+      "Van Driver": "bg-blue-100 text-blue-800",
+      "Auto Driver": "bg-purple-100 text-purple-800",
+      "Tempo/Truck Driver": "bg-green-100 text-green-800",
+      "Cab/Taxi Driver": "bg-purple-100 text-purple-800",
+      Other: "bg-gray-100 text-gray-800",
+    };
+    return colors[jobType] || "bg-gray-100 text-gray-800";
+  };
+  const [showCheck, setShowCheck] = useState(false);
+  const jobSeekerName = sessionStorage.getItem("jobSeekerName");
+  const jobSeekerPhone = sessionStorage.getItem("jobSeekerPhone");
+  const handleClick = async (job) => {
+    setShowCheck(true);
+    //await apply({companyName:job.companyName, companyPhone:job.companyPhone,jobSeekerName,jobSeekerPhone });
+    setTimeout(() => setShowCheck(false), 1500);
+  };
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Jobs</h1>
-            <p className="text-gray-600">Find your next opportunity from {jobs.length} available positions</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Available Jobs
+            </h1>
+            <p className="text-gray-600">
+              Find your next opportunity from {jobs.length} available positions
+            </p>
           </div>
 
           {/* Search and Filters */}
@@ -222,8 +248,12 @@ const getJobTypeColor = (jobType) => {
                 className="h-12 px-4 flex items-center gap-2"
               >
                 <Filter className="h-4 w-4" />
-                <span className="hidden sm:inline">{showFilters ? "Hide Filters" : "Filters"}</span>
-                {(selectedJobType !== "All Types" || selectedWorkTime !== "All Times" || selectedLocation) && (
+                <span className="hidden sm:inline">
+                  {showFilters ? "Hide Filters" : "Filters"}
+                </span>
+                {(selectedJobType !== "All Types" ||
+                  selectedWorkTime !== "All Times" ||
+                  selectedLocation) && (
                   <Badge
                     variant="secondary"
                     className="ml-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
@@ -244,26 +274,40 @@ const getJobTypeColor = (jobType) => {
             {showFilters && (
               <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <Select value={selectedJobType} onValueChange={setSelectedJobType}>
+                  <Select
+                    value={selectedJobType}
+                    onValueChange={setSelectedJobType}
+                  >
                     <SelectTrigger className="h-12 text-base">
                       <SelectValue placeholder="Job Type" />
                     </SelectTrigger>
                     <SelectContent>
                       {jobTypes.map((type) => (
-                        <SelectItem key={type} value={type} className="text-base py-3">
+                        <SelectItem
+                          key={type}
+                          value={type}
+                          className="text-base py-3"
+                        >
                           {type}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
 
-                  <Select value={selectedWorkTime} onValueChange={setSelectedWorkTime}>
+                  <Select
+                    value={selectedWorkTime}
+                    onValueChange={setSelectedWorkTime}
+                  >
                     <SelectTrigger className="h-12 text-base">
                       <SelectValue placeholder="Work Time" />
                     </SelectTrigger>
                     <SelectContent>
                       {workTimes.map((time) => (
-                        <SelectItem key={time} value={time} className="text-base py-3">
+                        <SelectItem
+                          key={time}
+                          value={time}
+                          className="text-base py-3"
+                        >
                           {time}
                         </SelectItem>
                       ))}
@@ -272,13 +316,15 @@ const getJobTypeColor = (jobType) => {
                 </div>
 
                 {/* Clear Filters Button */}
-                {(selectedJobType !== "All Types" || selectedWorkTime !== "All Times" || selectedLocation) && (
+                {(selectedJobType !== "All Types" ||
+                  selectedWorkTime !== "All Times" ||
+                  selectedLocation) && (
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setSelectedJobType("All Types")
-                      setSelectedWorkTime("All Times")
-                      setSelectedLocation("")
+                      setSelectedJobType("All Types");
+                      setSelectedWorkTime("All Times");
+                      setSelectedLocation("");
                     }}
                     className="w-full sm:w-auto"
                   >
@@ -301,17 +347,24 @@ const getJobTypeColor = (jobType) => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredJobs.map((job) => (
-            <Card key={job._id} className="hover:shadow-lg transition-shadow duration-200">
+            <Card
+              key={job._id}
+              className="hover:shadow-lg transition-shadow duration-200"
+            >
               <CardHeader>
                 <div className="flex flex-col md:flex-row justify-between items-start">
                   <div className="flex-1">
-                    <CardTitle className="text-xl font-semibold text-gray-900 mb-2">{job.companyName}</CardTitle>
+                    <CardTitle className="text-xl font-semibold text-gray-900 mb-2">
+                      {job.companyName}
+                    </CardTitle>
                     <div className="flex items-center text-gray-600 mb-2">
                       <MapPin className="h-4 w-4 mr-1" />
                       <span className="text-sm">{job.location}</span>
                     </div>
                   </div>
-                  <Badge className={getJobTypeColor(job.jobType)}>{job.jobType}</Badge>
+                  <Badge className={getJobTypeColor(job.jobType)}>
+                    {job.jobType}
+                  </Badge>
                 </div>
               </CardHeader>
 
@@ -326,12 +379,11 @@ const getJobTypeColor = (jobType) => {
                       <Users className="h-4 w-4 mr-2 text-blue-600" />
                       <span>{job.numberOfPeople} positions</span>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <Clock className="h-4 w-4 mr-2 text-purple-600" />
-                      <span>{job.work_time}</span>
-                    </div>
                   </div>
-
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <Clock className="h-4 w-4 mr-2 text-purple-600" />
+                    <span>{job.work_time}</span>
+                  </div>
                   <div className="border-t pt-4">
                     <div className="flex justify-between items-center text-sm text-gray-600 mb-3">
                       <span>
@@ -341,11 +393,17 @@ const getJobTypeColor = (jobType) => {
                     </div>
 
                     <div className="mb-4">
-                      <h4 className="font-medium text-gray-900 mb-2">Requirements:</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">{job.requirements}</p>
+                      <h4 className="font-medium text-gray-900 mb-2">
+                        Requirements:
+                      </h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        <DisplayText requirements={job.requirements} />
+                      </p>
                     </div>
 
-                    <Button className="w-full">Apply Now</Button>
+                    <Button onClick={handleClick} className="w-full">
+                      Apply Now
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -358,13 +416,50 @@ const getJobTypeColor = (jobType) => {
             <div className="text-gray-400 mb-4">
               <Search className="h-12 w-12 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
-            <p className="text-gray-600">Try adjusting your search criteria or filters</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No jobs found
+            </h3>
+            <p className="text-gray-600">
+              Try adjusting your search criteria or filters
+            </p>
           </div>
+        )}
+        {showCheck && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center z-50 bg-black/30"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center w-80 md:w-96 h-52"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="bg-green-500 rounded-full p-8 ">
+                <svg
+                  className="w-16 h-16 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <br />
+              <div className="text-xl font-bold -mt-4">Applied!</div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 const Input = ({ className, ...props }) => (
@@ -429,3 +524,28 @@ const SelectItem = ({ children, value, className }) => (
     {children}
   </option>
 );
+
+function DisplayText({ requirements }) {
+  const [showFull, setShowFull] = useState(false);
+  const maxLength = 60;
+
+  const toggle = () => setShowFull(!showFull);
+  const isLong = requirements.length > maxLength;
+  const text = showFull
+    ? requirements
+    : requirements.slice(0, maxLength) + (isLong ? "..." : "");
+
+  return (
+    <>
+      {text}
+      {isLong && (
+        <button
+          onClick={toggle}
+          className="text-blue-500 ml-1 focus:outline-none"
+        >
+          {showFull ? "Read less" : "Read more"}
+        </button>
+      )}
+    </>
+  );
+}

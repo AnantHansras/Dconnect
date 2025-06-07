@@ -278,7 +278,7 @@ exports.verifyJobSeekerLogin = async (req, res) => {
       req.session.jobSeekerId = jobSeeker._id;
       req.session.jobSeeker = jobSeeker;
       await OTP.deleteMany({ email });
-      return res.status(200).json({ success: true, message: 'Login successful' });
+      return res.status(200).json({ success: true, message: 'Login successful',data:jobSeeker });
     }
 
     res.status(404).json({ success: false, message: 'Job seeker not registered' });
