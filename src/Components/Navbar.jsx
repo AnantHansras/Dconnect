@@ -63,9 +63,9 @@ export default function Navbar({userType,setUserType}) {
             {
             isAdmin && renderLink("/allconnections", <Network  className="w-4 h-4" />, "All Connections")
             }
-            {/* {
-            isAdmin && renderLink("/allapplied", <Network  className="w-4 h-4" />, "Job Applicants")
-            } */}
+            {
+            isAdmin && renderLink("/applications", <Network  className="w-4 h-4" />, "Job Applicants")
+            }
             {userType && (
               <button onClick={handleLogout} className="flex items-center gap-1 hover:text-[#4A90E2]">
                 <LogOut className="w-4 h-4" /> Logout

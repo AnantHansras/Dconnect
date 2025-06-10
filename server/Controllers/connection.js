@@ -60,6 +60,7 @@ exports.createConnection = async (req, res) => {
     }
     .content {
       padding: 30px;
+      background-color: #f4f4f4;
     }
     .content p {
       font-size: 16px;
@@ -87,7 +88,7 @@ exports.createConnection = async (req, res) => {
     <div class="header">
       <h2>📢 New Connection Request</h2>
     </div>
-    <div class="content" style="background-color: #f4f4f4;>
+    <div class="content">
       <p><strong>Company:</strong> ${companyName}</p>
       <p><strong>Phone:</strong> ${companyPhone}</p>
       <p style="margin: 16px 0;">wants to connect with</p>
@@ -197,6 +198,7 @@ exports.applyForJob = async (req, res) => {
     }
     .content {
       padding: 30px;
+      background-color: #f4f4f4;
     }
     .content p {
       font-size: 16px;
@@ -224,9 +226,10 @@ exports.applyForJob = async (req, res) => {
     <div class="header">
       <h2>📝 New Job Application</h2>
     </div>
-    <div class="content" style="background-color: #f4f4f4;>
+    <div class="content">
       <p><strong>Jobseeker:</strong> ${jobseekerName}</p>
       <p><strong>Phone:</strong> ${jobseekerPhone}</p>
+       <p style="margin: 16px 0;">Applied for</p>
       <p><strong>Company:</strong> ${companyName}</p>
       <p><strong>Phone:</strong> ${companyPhone}</p>
       <hr class="divider" />
