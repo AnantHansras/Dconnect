@@ -87,7 +87,7 @@ exports.createConnection = async (req, res) => {
     <div class="header">
       <h2>📢 New Connection Request</h2>
     </div>
-    <div class="content">
+    <div class="content" style="background-color: #f4f4f4;>
       <p><strong>Company:</strong> ${companyName}</p>
       <p><strong>Phone:</strong> ${companyPhone}</p>
       <p style="margin: 16px 0;">wants to connect with</p>
@@ -224,7 +224,7 @@ exports.applyForJob = async (req, res) => {
     <div class="header">
       <h2>📝 New Job Application</h2>
     </div>
-    <div class="content">
+    <div class="content" style="background-color: #f4f4f4;>
       <p><strong>Jobseeker:</strong> ${jobseekerName}</p>
       <p><strong>Phone:</strong> ${jobseekerPhone}</p>
       <p><strong>Company:</strong> ${companyName}</p>
