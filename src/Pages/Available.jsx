@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { fetchAllJobs } from "../services/jobAPI";
 import { motion } from "framer-motion";
-
+import { apply } from "../services/connectionAPI";
 // Mock data based on the job schema
 const mockJobs = [
   {
@@ -212,7 +212,7 @@ export default function JobsPage() {
   const jobSeekerPhone = sessionStorage.getItem("jobSeekerPhone");
   const handleClick = async (job) => {
     setShowCheck(true);
-    //await apply({companyName:job.companyName, companyPhone:job.companyPhone,jobSeekerName,jobSeekerPhone });
+    await apply({companyName:job.companyName, companyPhone:job.companyPhone,jobSeekerName,jobSeekerPhone});
     setTimeout(() => setShowCheck(false), 1500);
   };
   return (
@@ -401,7 +401,7 @@ export default function JobsPage() {
                       </p>
                     </div>
 
-                    <Button onClick={handleClick} className="w-full">
+                    <Button onClick={() => handleClick(job)} className="w-full">
                       Apply Now
                     </Button>
                   </div>

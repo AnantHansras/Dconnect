@@ -27,7 +27,7 @@ const formSchema = z
         "Other",
     ]),
     numberOfPeople: z.coerce.number().int().positive({ message: "Please enter a positive number." }),
-    companyPhone: z.string().min(1, { message: "Phone" }),
+    companyPhone: z.string(),
     expectedSalary: z.string().min(1, { message: "Expected salary is required." }),
     work_time: z.enum([
       "Morning (6 AM – 12 PM)",
@@ -44,7 +44,7 @@ const formSchema = z
     message: "Maximum age must be greater than or equal to minimum age",
     path: ["maxAge"],
   });
-const companyPhone1 = sessionStorage.getItem("companyPhone");
+const companyPhone1 = sessionStorage.getItem("companyPhone") || "";
 export default function PostJob() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 

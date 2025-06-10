@@ -16,6 +16,7 @@ import PostJob from './Pages/PostJob';
 import Available from './Pages/Available';
 import Profile from './Pages/Profile';
 import AllConnections from './Pages/AllConnetions';
+import Application from './Pages/Applications';
 function App() {
   const [userType, setUserType] = useState(null);
   useEffect(() => {
@@ -64,6 +65,7 @@ function App() {
         <Route path="/about" element={<About/>}  />
         <Route path="/searchdb" element={<SearchDB/>}  />
         <Route path="/allconnections" element={<AllConnections/>}  />
+        <Route path="/applications" element={<Application/>}  />
       </Routes>
     
     </>

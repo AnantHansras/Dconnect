@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const Connection = require('../Models/Connection'); // Adjust the path as needed
-
+const JobApplication = require('../Models/Connection');
 const transporter = nodemailer.createTransport({
   service: "gmail", // Or your SMTP provider
   auth: {
@@ -12,7 +12,6 @@ const transporter = nodemailer.createTransport({
 exports.createConnection = async (req, res) => {
   try {
     const connection = new Connection(req.body);
-    console.log("Connection data:", connection);
     await connection.save();
 
     // Extract data
@@ -84,6 +83,84 @@ exports.getAllConnections = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch connections',
+      error: error.message,
+    });
+  }
+};
+
+
+exports.applyForJob = async (req, res) => {
+  try {
+    const application = new JobApplication(req.body);
+    console.log("Application data:", application);
+    await application.save();
+
+    // Extract data
+    const jobseekerName = application.jobSeekerName;
+    const jobseekerPhone = application.jobSeekerPhone;
+    const companyPhone = application.companyPhone;
+    const companyName = application.companyName;
+
+    // Define mail options
+    const mailOptions = {
+      from: process.env.MAIL_USER,
+      to: process.env.ADMIN_EMAIL,
+      subject: "New Job Application",
+      text: `Jobseeker "${jobseekerName}" (${jobseekerPhone}) has applied for "${companyPhone}" at "${companyName}".`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>New Job Application</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+          <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="color: #333;">📝 New Job Application</h2>
+            <p><strong>Jobseeker:</strong> ${jobseekerName}</p>
+            <p><strong>Phone:</strong> ${jobseekerPhone}</p>
+            <p><strong>Company:</strong> ${companyName}</p>
+            <p><strong>Phone:</strong> ${companyPhone}</p>
+            <hr style="margin: 20px 0;" />
+            <p style="text-align: center;">Please review and take necessary action.</p>
+            <p style="text-align: center; color: #aaa; font-size: 14px;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+
+    res.status(201).json({
+      success: true,
+      message: "Application submitted successfully",
+      data: application,
+    });
+  } catch (error) {
+    console.error("Error submitting application:", error.message);
+    res.status(400).json({
+      success: false,
+      message: "Failed to apply for job",
+      error: error.message,
+    });
+  }
+};
+
+exports.getAllApplications = async (req, res) => {
+  try {
+    const applications = await JobApplication.find().sort({ createdAt: -1 }); // latest first
+    res.status(200).json({
+      success: true,
+      message: 'Applications fetched successfully',
+      data: applications,
+    });
+  } catch (error) {
+    console.error("Error fetching applications:", error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch applications',
       error: error.message,
     });
   }

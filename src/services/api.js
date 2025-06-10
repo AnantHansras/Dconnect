@@ -27,4 +27,6 @@ export const jobEndpoints = {
 export const connectionEndpoints = {
   CREATE_CONNECTION_API: `${BASE_URL}/connection/create`,
   GET_ALL_CONNECTIONS_API: `${BASE_URL}/connection/all`,
+  APPLY_FOR_JOB_API: `${BASE_URL}/connection/create/apply`,
+  GET_ALL_APPLICATIONS_API: `${BASE_URL}/connection/all/apply`,
 };
