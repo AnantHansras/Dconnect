@@ -27,27 +27,83 @@ exports.createConnection = async (req, res) => {
       subject: "New Connection Request",
       text: `Company "${companyName}" (${companyPhone}) wants to connect with Jobseeker "${jobseekerName}" (${phone}).`,
       html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>New Connection Request</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
-          <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px;">
-            <h2 style="text-align: center; color: #333;">📢 New Connection Request</h2>
-            <p><strong>Company:</strong> ${companyName}</p>
-            <p><strong>Phone:</strong> ${companyPhone}</p>
-            <p>wants to connect with</p>
-            <p><strong>Jobseeker:</strong> ${jobseekerName}</p>
-            <p><strong>Phone:</strong> ${phone}</p>
-            <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;" />
-            <p style="text-align: center;">Please respond accordingly to initiate the connection.</p>
-            <p style="text-align: center; color: #aaa; font-size: 14px;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
-          </div>
-        </body>
-        </html>
-      `,
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New Connection Request</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background-color: #f3f4f6;
+      padding: 30px;
+      margin: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #10b981;
+      color: white;
+      padding: 24px 30px;
+      text-align: center;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 30px;
+    }
+    .content p {
+      font-size: 16px;
+      color: #374151;
+      margin: 10px 0;
+    }
+    .content strong {
+      color: #111827;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 24px 0;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>📢 New Connection Request</h2>
+    </div>
+    <div class="content">
+      <p><strong>Company:</strong> ${companyName}</p>
+      <p><strong>Phone:</strong> ${companyPhone}</p>
+      <p style="margin: 16px 0;">wants to connect with</p>
+      <p><strong>Jobseeker:</strong> ${jobseekerName}</p>
+      <p><strong>Phone:</strong> ${phone}</p>
+      <hr class="divider" />
+      <p style="text-align: center;">Please respond accordingly to initiate the connection.</p>
+    </div>
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} Your Company. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+`
+
     };
 
     // Send the email
@@ -108,26 +164,82 @@ exports.applyForJob = async (req, res) => {
       subject: "New Job Application",
       text: `Jobseeker "${jobseekerName}" (${jobseekerPhone}) has applied for "${companyPhone}" at "${companyName}".`,
       html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>New Job Application</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-          <div style="max-width: 600px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h2 style="color: #333;">📝 New Job Application</h2>
-            <p><strong>Jobseeker:</strong> ${jobseekerName}</p>
-            <p><strong>Phone:</strong> ${jobseekerPhone}</p>
-            <p><strong>Company:</strong> ${companyName}</p>
-            <p><strong>Phone:</strong> ${companyPhone}</p>
-            <hr style="margin: 20px 0;" />
-            <p style="text-align: center;">Please review and take necessary action.</p>
-            <p style="text-align: center; color: #aaa; font-size: 14px;">&copy; ${new Date().getFullYear()} Your Company. All rights reserved.</p>
-          </div>
-        </body>
-        </html>
-      `,
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>New Job Application</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background-color: #f3f4f6;
+      padding: 30px;
+      margin: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #3b82f6;
+      color: white;
+      padding: 24px 30px;
+      text-align: center;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 30px;
+    }
+    .content p {
+      font-size: 16px;
+      color: #333;
+      margin: 8px 0;
+    }
+    .content strong {
+      color: #111827;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>📝 New Job Application</h2>
+    </div>
+    <div class="content">
+      <p><strong>Jobseeker:</strong> ${jobseekerName}</p>
+      <p><strong>Phone:</strong> ${jobseekerPhone}</p>
+      <p><strong>Company:</strong> ${companyName}</p>
+      <p><strong>Phone:</strong> ${companyPhone}</p>
+      <hr class="divider" />
+      <p style="text-align: center;">Please review and take necessary action.</p>
+    </div>
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} Your Company. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+`,
+
     };
 
     const info = await transporter.sendMail(mailOptions);
