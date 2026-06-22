@@ -1,26 +1,3 @@
-# .github/workflows/oss.yml
-#
-# 3-stage security pipeline: Scan -> Triage -> Remediate
-# Manual trigger only. Each job depends on the previous via `needs`.
-#
-# IMPORTANT CAVEAT (read before relying on Job 3):
-# GitHub does not expose an API/CLI call to force-create a Dependabot
-# security-update PR on demand. Those PRs are generated automatically by
-# GitHub's backend the moment a Dependabot alert is created, IF:
-#   - Dependabot security updates are enabled for the repo
-#     (Settings -> Code security -> Dependabot security updates), and
-#   - Dependabot is able to compute a safe upgrade path.
-# This pipeline cannot bypass that. What it CAN do, and does below, is:
-#   1. Detect High/Critical alerts that already have an auto-fix PR open
-#      (via `gh pr list`) and report them.
-#   2. For High/Critical alerts that have NO PR yet, open a tracking
-#      GitHub Issue assigned for follow-up, since the only real ways to
-#      force generation are: (a) re-running dependency graph re-scan via
-#      Settings, or (b) using the REST endpoint
-#      POST /repos/{owner}/{repo}/dependabot/alerts/{alert_number}
-#      to set/confirm the alert state, which can nudge re-evaluation but
-#      is NOT a guaranteed "create PR now" button.
-
 name: OSS Vulnerabilities Remediation Workflow
 
 on:
@@ -36,7 +13,7 @@ permissions:
   contents: read
   security-events: read
   pull-requests: write
-  issues: write 
+  issues: write
 
 jobs:
 
@@ -56,8 +33,6 @@ jobs:
           echo "## Repository file listing for branch: ${{ inputs.target_branch }}"
           echo "Generated at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           echo "---------------------------------------------"
-          # -maxdepth 3 keeps the listing readable on large repos;
-          # increase if you need deeper visibility.
           find . -maxdepth 3 -not -path '*/.git*' | sort
 
   # JOB 2: Triage agent
@@ -79,10 +54,8 @@ jobs:
         id: triage
         run: |
           set -euo pipefail
-
           REPO="${{ github.repository }}"
           echo "Fetching open Dependabot alerts for $REPO ..."
-
           if ! gh api \
                 --paginate \
                 -H "Accept: application/vnd.github+json" \
@@ -99,13 +72,12 @@ jobs:
           # --paginate emits one JSON array per page; `jq -s 'add'` slurps
           # all those arrays into a single flat array.
           jq -s 'add' raw_alerts.json > alerts.json
-
           ALERT_COUNT=$(jq 'length' alerts.json)
 
           if [ "$ALERT_COUNT" -eq 0 ]; then
             echo "No vulnerabilities found."
             echo "# Triage Summary" >> "$GITHUB_STEP_SUMMARY"
-            echo "✅ No open Dependabot alerts found for \`${{ inputs.target_branch }}\`." >> "$GITHUB_STEP_SUMMARY"
+            echo "No open Dependabot alerts found for ${{ inputs.target_branch }}." >> "$GITHUB_STEP_SUMMARY"
             echo "has_findings=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -113,46 +85,55 @@ jobs:
           echo "Found $ALERT_COUNT open alert(s). Extracting fields and sorting by CVSS score..."
 
           # --- CVSS extraction, in order of preference ---
-          # GitHub populates CVSS in one of several places depending on
-          # when/how the advisory was created:
-          #   1. security_advisory.cvss.score          (legacy, older advisories)
-          #   2. security_advisory.cvss_severities.cvss_v4.score  (newest)
-          #   3. security_advisory.cvss_severities.cvss_v3.score  (common fallback)
-          # Reading ONLY field #1 is what caused scores to show as 0 —
-          # alerts that only populate v3/v4 had a null legacy field, and
-          # the old `// 0` fallback silently substituted a fake zero.
-          # The `//` chain below tries each in order and only falls back
-          # to "N/A" if every one of them is genuinely null/missing.
+          # GitHub populates CVSS in different fields depending on the
+          # advisory's age and scoring source:
+          #   1. security_advisory.cvss.score                      (legacy)
+          #   2. security_advisory.cvss_severities.cvss_v4.score   (newest)
+          #   3. security_advisory.cvss_severities.cvss_v3.score   (common fallback)
           #
-          # Fixed version extraction:
-          #   security_vulnerability.first_patched_version.identifier
-          # is null when no patch exists yet — we surface that explicitly
-          # as "No fix available" rather than leaving it blank.
+          # THE BUG WE FIXED: jq's `//` operator only falls through on
+          # `null` or `false` -- NOT on `0`. Many advisories carry a real,
+          # populated "score": 0 in the legacy field (an explicit
+          # "unscored" placeholder) while the actual score sits in the
+          # v3/v4 field. `0 // "N/A"` evaluates to 0, so a naive chain
+          # stops at the first field and never checks further.
+          #
+          # THE FIX: extract each candidate into a variable, then
+          # explicitly test `> 0` (not just "exists") before accepting
+          # it. Only when every candidate is null/0 do we fall through
+          # to "N/A".
           jq '
-            map({
-              component:      (.security_vulnerability.package.name // "unknown"),
-              cve_id:         (.security_advisory.cve_id // "N/A"),
-              severity:       (.security_vulnerability.severity // "unknown"),
-              cvss:           (
-                                .security_advisory.cvss.score
-                                // .security_advisory.cvss_severities.cvss_v4.score
-                                // .security_advisory.cvss_severities.cvss_v3.score
-                                // "N/A"
-                              ),
-              cvss_version:    (
-                                if .security_advisory.cvss.score != null then "legacy"
-                                elif .security_advisory.cvss_severities.cvss_v4.score != null then "v4"
-                                elif .security_advisory.cvss_severities.cvss_v3.score != null then "v3"
-                                else "unknown"
-                                end
-                              ),
-              fixed_version:   (.security_vulnerability.first_patched_version.identifier // "No fix available"),
-              fix_available:   (.security_vulnerability.first_patched_version != null),
-              html_url:        (.html_url // ""),
-              number:          (.number)
-            })
-            # sort_by needs a numeric value, so coerce "N/A" to -1 just
-            # for ordering purposes without losing the "N/A" display value
+            map(
+              (.security_advisory.cvss.score // 0) as $legacy
+              | (.security_advisory.cvss_severities.cvss_v4.score // 0) as $v4
+              | (.security_advisory.cvss_severities.cvss_v3.score // 0) as $v3
+              | {
+                  component:    (.security_vulnerability.package.name // "unknown"),
+                  cve_id:       (.security_advisory.cve_id // "N/A"),
+                  severity:     (.security_vulnerability.severity // "unknown"),
+                  cvss:         (
+                                  if $legacy > 0 then $legacy
+                                  elif $v4 > 0 then $v4
+                                  elif $v3 > 0 then $v3
+                                  else "N/A"
+                                  end
+                                ),
+                  cvss_version: (
+                                  if $legacy > 0 then "legacy"
+                                  elif $v4 > 0 then "v4"
+                                  elif $v3 > 0 then "v3"
+                                  else "unscored"
+                                  end
+                                ),
+                  fixed_version: (.security_vulnerability.first_patched_version.identifier // "No fix available"),
+                  fix_available: (.security_vulnerability.first_patched_version != null),
+                  html_url:      (.html_url // ""),
+                  number:        (.number)
+                }
+            )
+            # sort_by needs a comparable numeric value; treat "N/A" as
+            # lowest priority (-1) for ordering purposes only -- the
+            # displayed value stays "N/A", this only affects sort order.
             | sort_by(if .cvss == "N/A" then -1 else .cvss end)
             | reverse
           ' alerts.json > sorted_alerts.json
@@ -161,22 +142,21 @@ jobs:
 
           # --- Build Markdown table for step summary + stdout ---
           {
-            echo "# 🔍 Dependabot Triage Summary"
+            echo "# Dependabot Triage Summary"
             echo ""
-            echo "Branch: \`${{ inputs.target_branch }}\` • Total open alerts: **$ALERT_COUNT**"
+            echo "Branch: ${{ inputs.target_branch }} -- Total open alerts: $ALERT_COUNT"
             echo ""
             echo "| Component | CVE ID | Severity | CVSS | Score Source | Fixed Version | Link |"
             echo "|---|---|---|---|---|---|---|"
           } > summary_table.md
 
-          jq -r '.[] | [.component, .cve_id, .severity, .cvss, .cvss_version, .fixed_version, .html_url] | @tsv' sorted_alerts.json |
+          jq -r '.[] | [.component, .cve_id, .severity, (.cvss|tostring), .cvss_version, .fixed_version, .html_url] | @tsv' sorted_alerts.json |
           while IFS=$'\t' read -r component cve severity cvss cvss_version fixed_version url; do
             echo "| $component | $cve | $severity | $cvss | $cvss_version | $fixed_version | [link]($url) |" >> summary_table.md
           done
 
           cat summary_table.md >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-
           echo ""
           echo "================ TRIAGE RESULTS (CVSS DESC) ================"
           cat summary_table.md
@@ -199,7 +179,7 @@ jobs:
     needs: triage-agent
     if: needs.triage-agent.outputs.has_findings == 'true'
     env:
-      GH_TOKEN: ${{ secrets.DEPENDABOT_PAT}}
+      GH_TOKEN: ${{ secrets.DEPENDABOT_PAT }}
     steps:
       - name: Checkout target branch
         uses: actions/checkout@v4
@@ -212,6 +192,8 @@ jobs:
           name: dependabot-triage
 
       - name: Remediate High/Critical alerts
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
         run: |
           set -euo pipefail
           REPO="${{ github.repository }}"
@@ -225,19 +207,23 @@ jobs:
           if [ "$COUNT" -eq 0 ]; then
             echo "No High or Critical vulnerabilities found. Nothing to remediate."
             echo "# Remediation Summary" >> "$GITHUB_STEP_SUMMARY"
-            echo "✅ No High/Critical severity alerts — no remediation action needed." >> "$GITHUB_STEP_SUMMARY"
+            echo "No High/Critical severity alerts -- no remediation action needed." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
 
           echo "Found $COUNT High/Critical alert(s) to remediate."
           {
-            echo "# 🛠️ Remediation Summary"
+            echo "# Remediation Summary"
             echo ""
             echo "| Component | CVE ID | Severity | Action Taken |"
             echo "|---|---|---|---|"
           } > remediation_table.md
 
-          while IFS=$'\t' read -r component cve severity cvss fix url number; do
+          # NOTE: each candidate PR check / issue-create below uses
+          # printf with quoted args instead of a heredoc, so there is no
+          # indentation-sensitive terminator that can break inside this
+          # YAML-embedded, indented script block.
+          while IFS=$'\t' read -r component cve severity cvss fixed_version fix url number; do
 
             EXISTING_PR=$(gh pr list \
               --repo "$REPO" \
@@ -250,9 +236,43 @@ jobs:
               PR_URL=$(echo "$EXISTING_PR" | jq -r '.url')
               ACTION="Existing Dependabot PR found: $PR_URL"
               echo "[$severity] $component ($cve): $ACTION"
+
             elif [ "$fix" = "true" ]; then
-              # A patched version exists but no PR yet — open a tracking issue
+              # Build the issue body with printf instead of a heredoc.
+              # Each line is a separately-quoted argument, so backticks,
+              # $, and quotes inside the text are never re-interpreted
+              # by the shell -- this removes the whole class of
+              # "unexpected EOF" / quote-mismatch bug we hit earlier.
+              ISSUE_BODY=$(printf '%s\n' \
+                "Dependabot alert flags ${component} as ${severity} (CVSS ${cvss}) with a known fix available, but no automated PR currently exists on ${TARGET_BRANCH}." \
+                "" \
+                "Fixed version: ${fixed_version}" \
+                "" \
+                "Suggested next steps:" \
+                "1. Confirm Dependabot security updates are enabled: repo Settings -> Code security -> Dependabot security updates." \
+                "2. If enabled and still no PR after the next scheduled scan, bump ${component} manually to the patched version above." \
+                "3. Alert reference: ${url}")
+
               ISSUE_URL=$(gh issue create \
                 --repo "$REPO" \
                 --title "[Security][$severity] Remediate $component ($cve)" \
-                --body "Dependabot alert #$number flags **$component** as **$severity** (CVSS $cvss) with a known fix available, but no automated PR currently exists on \`${{ inputs.target_branch }}\`.
+                --body "$ISSUE_BODY" \
+                --label "security" 2>/dev/null || echo "")
+
+              ACTION="No PR found; tracking issue opened: ${ISSUE_URL:-failed to create}"
+              echo "[$severity] $component ($cve): $ACTION"
+
+            else
+              ACTION="No fix currently available upstream -- monitoring only."
+              echo "[$severity] $component ($cve): $ACTION"
+            fi
+
+            echo "| $component | $cve | $severity | $ACTION |" >> remediation_table.md
+
+          done < <(jq -r '.[] | [.component, .cve_id, .severity, (.cvss|tostring), .fixed_version, .fix_available, .html_url, .number] | @tsv' critical_high.json)
+
+          cat remediation_table.md >> "$GITHUB_STEP_SUMMARY"
+          echo ""
+          echo "================ REMEDIATION RESULTS ================"
+          cat remediation_table.md
+          echo "======================================================="
