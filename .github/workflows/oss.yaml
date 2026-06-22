@@ -251,31 +251,8 @@ jobs:
               ACTION="Existing Dependabot PR found: $PR_URL"
               echo "[$severity] $component ($cve): $ACTION"
             elif [ "$fix" = "true" ]; then
-              # A patched version exists but no PR yet — open a tracking
-              # issue rather than fabricate a PR action that doesn't exist.
+              # A patched version exists but no PR yet — open a tracking issue
               ISSUE_URL=$(gh issue create \
                 --repo "$REPO" \
                 --title "[Security][$severity] Remediate $component ($cve)" \
                 --body "Dependabot alert #$number flags **$component** as **$severity** (CVSS $cvss) with a known fix available, but no automated PR currently exists on \`${{ inputs.target_branch }}\`.
-
-### Suggested next steps:
-# 1. Confirm Dependabot security updates are enabled: repo Settings → Code security → Dependabot security updates.
-# 2. If enabled and still no PR after the next scheduled scan, bump \`$component\` manually to the patched version referenced in: $url
-# 3. Alert reference: $url" \
-#                 --label "security" 2>/dev/null || echo "")
-#               ACTION="No PR found; tracking issue opened: ${ISSUE_URL:-failed to create}"
-#               echo "[$severity] $component ($cve): $ACTION"
-#             else
-#               ACTION="No fix currently available upstream — monitoring only."
-#               echo "[$severity] $component ($cve): $ACTION"
-#             fi
-
-#             echo "| $component | $cve | $severity | $ACTION |" >> remediation_table.md
-
-#           done < <(jq -r '.[] | [.component, .cve_id, .severity, .cvss, .fix_available, .html_url, .number] | @tsv' critical_high.json)
-
-#           cat remediation_table.md >> "$GITHUB_STEP_SUMMARY"
-#           echo ""
-#           echo "================ REMEDIATION RESULTS ================"
-#           cat remediation_table.md
-#           echo "=============================================================="
