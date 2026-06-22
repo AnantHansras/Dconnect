@@ -194,7 +194,7 @@ jobs:
     needs: triage-agent
     if: needs.triage-agent.outputs.has_findings == 'true'
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.DEPENDABOT_PAT }}
     steps:
       - name: Checkout target branch
         uses: actions/checkout@v4
