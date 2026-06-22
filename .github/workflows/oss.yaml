@@ -36,12 +36,11 @@ permissions:
   contents: read
   security-events: read
   pull-requests: write
-  issues: write   # needed only because Job 3 opens tracking issues as a fallback
+  issues: write 
 
 jobs:
-  # ----------------------------------------------------------------------
+
   # JOB 1: Scan agent
-  # ----------------------------------------------------------------------
   scan-agent:
     name: Scan agent
     runs-on: ubuntu-latest
@@ -61,9 +60,7 @@ jobs:
           # increase if you need deeper visibility.
           find . -maxdepth 3 -not -path '*/.git*' | sort
 
-  # ----------------------------------------------------------------------
   # JOB 2: Triage agent
-  # ----------------------------------------------------------------------
   triage-agent:
     name: Triage agent
     runs-on: ubuntu-latest
@@ -190,9 +187,7 @@ jobs:
             summary_table.md
           retention-days: 14
 
-  # ----------------------------------------------------------------------
   # JOB 3: Remediation agent
-  # ----------------------------------------------------------------------
   remediation-agent:
     name: Remediation agent
     runs-on: ubuntu-latest
@@ -291,4 +286,3 @@ jobs:
 #           echo ""
 #           echo "================ REMEDIATION RESULTS ================"
 #           cat remediation_table.md
-#           echo "======================================================="
