@@ -68,7 +68,7 @@ jobs:
     outputs:
       has_findings: ${{ steps.triage.outputs.has_findings }}
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.DEPENDABOT_PAT }}
     steps:
       - name: Checkout target branch
         uses: actions/checkout@v4
