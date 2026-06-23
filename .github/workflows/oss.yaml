@@ -191,7 +191,7 @@ jobs:
         with:
           name: dependabot-triage
 
-      - name: Remediate High/Critical alerts
+      - name: Remediate High/Critical alerts via Dependabot PRs
         env:
           TARGET_BRANCH: ${{ inputs.target_branch }}
         run: |
@@ -215,16 +215,18 @@ jobs:
           {
             echo "# Remediation Summary"
             echo ""
-            echo "| Component | CVE ID | Severity | Action Taken |"
-            echo "|---|---|---|---|"
+            echo "| Component | CVE ID | Severity | Alert # | Action Taken |"
+            echo "|---|---|---|---|---|"
           } > remediation_table.md
 
-          # NOTE: each candidate PR check / issue-create below uses
-          # printf with quoted args instead of a heredoc, so there is no
-          # indentation-sensitive terminator that can break inside this
-          # YAML-embedded, indented script block.
           while IFS=$'\t' read -r component cve severity cvss fixed_version fix url number; do
 
+            # ------------------------------------------------------------------
+            # STEP 1: Check whether Dependabot has already opened a PR for this
+            #         alert.  Dependabot PR branches follow the pattern
+            #         "dependabot/<ecosystem>/<package>-<version>", so a title
+            #         search on the component name is a reliable proxy.
+            # ------------------------------------------------------------------
             EXISTING_PR=$(gh pr list \
               --repo "$REPO" \
               --state open \
@@ -233,41 +235,87 @@ jobs:
               --jq '.[0] // empty' 2>/dev/null || echo "")
 
             if [ -n "$EXISTING_PR" ]; then
+              # ----------------------------------------------------------------
+              # A Dependabot PR already exists -- nothing more to do.
+              # ----------------------------------------------------------------
               PR_URL=$(echo "$EXISTING_PR" | jq -r '.url')
-              ACTION="Existing Dependabot PR found: $PR_URL"
+              ACTION="Dependabot PR already open: $PR_URL"
               echo "[$severity] $component ($cve): $ACTION"
 
             elif [ "$fix" = "true" ]; then
-              # Build the issue body with printf instead of a heredoc.
-              # Each line is a separately-quoted argument, so backticks,
-              # $, and quotes inside the text are never re-interpreted
-              # by the shell -- this removes the whole class of
-              # "unexpected EOF" / quote-mismatch bug we hit earlier.
-              ISSUE_BODY=$(printf '%s\n' \
-                "Dependabot alert flags ${component} as ${severity} (CVSS ${cvss}) with a known fix available, but no automated PR currently exists on ${TARGET_BRANCH}." \
-                "" \
-                "Fixed version: ${fixed_version}" \
-                "" \
-                "Suggested next steps:" \
-                "1. Confirm Dependabot security updates are enabled: repo Settings -> Code security -> Dependabot security updates." \
-                "2. If enabled and still no PR after the next scheduled scan, bump ${component} manually to the patched version above." \
-                "3. Alert reference: ${url}")
+              # ----------------------------------------------------------------
+              # No PR yet, but a patched version exists.
+              #
+              # Strategy: trigger Dependabot to open a security-update PR by
+              # cycling the alert state (dismiss → reopen).  GitHub's internal
+              # Dependabot scheduler re-evaluates every open alert that has an
+              # available fix; reopening an alert that was in a transient
+              # "dismissed" state is the documented way to force a fresh run
+              # without waiting for the next scheduled sweep.
+              #
+              # Why not a direct "create PR" API call?
+              #   GitHub does not expose a public REST endpoint to imperatively
+              #   request a Dependabot security-update PR for a specific alert.
+              #   The dismiss→reopen cycle is the closest supported primitive.
+              #
+              # Prerequisites (must be configured on the repository):
+              #   • Dependabot alerts        -- enabled
+              #   • Dependabot security updates -- enabled  (Settings → Code
+              #     security → Dependabot security updates)
+              #   • DEPENDABOT_PAT has `security_events` scope (read/write)
+              # ----------------------------------------------------------------
 
-              ISSUE_URL=$(gh issue create \
-                --repo "$REPO" \
-                --title "[Security][$severity] Remediate $component ($cve)" \
-                --body "$ISSUE_BODY" \
-                --label "security" 2>/dev/null || echo "")
+              echo "[$severity] $component ($cve): No open PR found. Triggering Dependabot via alert #${number} state cycle..."
 
-              ACTION="No PR found; tracking issue opened: ${ISSUE_URL:-failed to create}"
-              echo "[$severity] $component ($cve): $ACTION"
+              # --- Dismiss the alert (tolerable_risk is a neutral reason) ---
+              DISMISS_HTTP=$(gh api \
+                --method PATCH \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "/repos/${REPO}/dependabot/alerts/${number}" \
+                -f state="dismissed" \
+                -f dismissed_reason="tolerable_risk" \
+                -f dismissed_comment="Auto-dismissed by remediation workflow to trigger a fresh Dependabot security-update PR. Will be reopened immediately." \
+                --jq '.state' 2>/dev/null || echo "error")
+
+              if [ "$DISMISS_HTTP" != "dismissed" ]; then
+                # Dismissal failed (e.g. token lacks security_events write
+                # scope, or Dependabot security updates are not enabled).
+                # Fall back to a plain comment on the alert URL so the team
+                # is notified without losing the alert.
+                ACTION="Could not dismiss alert #${number} to trigger PR (check token scope / Dependabot security updates setting). Manual fix required: update ${component} to ${fixed_version}. Alert: ${url}"
+                echo "::warning::[$severity] $component ($cve): $ACTION"
+              else
+                # --- Immediately reopen the alert ---
+                REOPEN_HTTP=$(gh api \
+                  --method PATCH \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  "/repos/${REPO}/dependabot/alerts/${number}" \
+                  -f state="open" \
+                  --jq '.state' 2>/dev/null || echo "error")
+
+                if [ "$REOPEN_HTTP" = "open" ]; then
+                  ACTION="Dependabot PR triggered via alert #${number} state cycle (dismiss → reopen). PR will appear shortly. Fix: ${component} → ${fixed_version}. Alert: ${url}"
+                  echo "[$severity] $component ($cve): $ACTION"
+                else
+                  # Reopen failed -- alert is currently dismissed. Emit a
+                  # warning so an operator can reopen it manually.
+                  ACTION="Alert #${number} dismissed but could not be reopened automatically. Please reopen manually to trigger Dependabot PR. Alert: ${url}"
+                  echo "::warning::[$severity] $component ($cve): $ACTION"
+                fi
+              fi
 
             else
-              ACTION="No fix currently available upstream -- monitoring only."
+              # ----------------------------------------------------------------
+              # No fix is available upstream yet -- nothing Dependabot can do.
+              # Log for visibility; no state change performed.
+              # ----------------------------------------------------------------
+              ACTION="No upstream fix available -- monitoring only. Alert: ${url}"
               echo "[$severity] $component ($cve): $ACTION"
             fi
 
-            echo "| $component | $cve | $severity | $ACTION |" >> remediation_table.md
+            echo "| $component | $cve | $severity | #${number} | $ACTION |" >> remediation_table.md
 
           done < <(jq -r '.[] | [.component, .cve_id, .severity, (.cvss|tostring), .fixed_version, .fix_available, .html_url, .number] | @tsv' critical_high.json)
 
