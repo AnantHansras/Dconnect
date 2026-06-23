@@ -146,13 +146,13 @@ jobs:
             echo ""
             echo "Branch: ${{ inputs.target_branch }} -- Total open alerts: $ALERT_COUNT"
             echo ""
-            echo "| Component | CVE ID | Severity | CVSS | Score Source | Fixed Version | Link |"
-            echo "|---|---|---|---|---|---|---|"
+            echo "| Component | CVE ID | Severity | CVSS | Fixed Version | Link |"
+            echo "|---|---|---|---|---|---|"
           } > summary_table.md
 
-          jq -r '.[] | [.component, .cve_id, .severity, (.cvss|tostring), .cvss_version, .fixed_version, .html_url] | @tsv' sorted_alerts.json |
-          while IFS=$'\t' read -r component cve severity cvss cvss_version fixed_version url; do
-            echo "| $component | $cve | $severity | $cvss | $cvss_version | $fixed_version | [link]($url) |" >> summary_table.md
+          jq -r '.[] | [.component, .cve_id, .severity, (.cvss|tostring), .fixed_version, .html_url] | @tsv' sorted_alerts.json |
+          while IFS=$'\t' read -r component cve severity cvss fixed_version url; do
+            echo "| $component | $cve | $severity | $cvss | $fixed_version | [link]($url) |" >> summary_table.md
           done
 
           cat summary_table.md >> "$GITHUB_STEP_SUMMARY"
