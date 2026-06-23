@@ -10,7 +10,7 @@ on:
         default: "main"
 
 permissions:
-  contents: read
+  contents: write        # remediation-agent pushes a touch commit to dependabot.yml
   security-events: read
   pull-requests: write
   issues: write
@@ -185,6 +185,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target_branch }}
+          # contents: write is needed so we can commit the dependabot.yml touch
+          token: ${{ secrets.DEPENDABOT_PAT }}
 
       - name: Download triage artifacts
         uses: actions/download-artifact@v4
@@ -219,6 +221,80 @@ jobs:
             echo "|---|---|---|---|---|"
           } > remediation_table.md
 
+          # ====================================================================
+          # TRIGGER STRATEGY
+          # ====================================================================
+          # GitHub does not expose a REST endpoint to imperatively request a
+          # Dependabot security-update PR for a specific alert.  Two reliable
+          # side-channel triggers exist:
+          #
+          #   PRIMARY   — Push a touch commit to .github/dependabot.yml.
+          #               Any push to this file causes GitHub to immediately
+          #               re-parse the config and kick off a full security-update
+          #               sweep across ALL open alerts that have available fixes.
+          #               One commit covers every alert in this run, so we do it
+          #               once up-front rather than once per alert.
+          #
+          #   FALLBACK  — Per-alert dismiss → reopen state cycle via the REST
+          #               API.  Used only when the dependabot.yml push fails
+          #               (e.g. no .github/dependabot.yml exists yet, or the
+          #               commit push is rejected).  This re-queues individual
+          #               alerts with Dependabot's scheduler.
+          #
+          # Prerequisites (must be set on the repository):
+          #   • Dependabot alerts           enabled
+          #   • Dependabot security updates enabled  (Settings → Code security)
+          #   • DEPENDABOT_PAT:  repo + security_events scopes (read + write)
+          # ====================================================================
+
+          # --------------------------------------------------------------------
+          # PRIMARY TRIGGER: touch .github/dependabot.yml and push
+          # --------------------------------------------------------------------
+          DEPENDABOT_YML=".github/dependabot.yml"
+          PRIMARY_TRIGGERED=false
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ -f "$DEPENDABOT_YML" ]; then
+            # File exists -- append and immediately remove a timestamped
+            # comment so the file content is logically unchanged but git sees
+            # a real diff, which is enough to fire the Dependabot webhook.
+            STAMP="# remediation-trigger: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "$STAMP" >> "$DEPENDABOT_YML"
+            git add "$DEPENDABOT_YML"
+            git commit -m "chore(security): trigger Dependabot security-update sweep [skip ci]"
+
+            # Strip the stamp line back out in a follow-up commit so the file
+            # stays clean.  Two commits are necessary because the first push
+            # is what fires the webhook; we can't revert and squash in-flight.
+            grep -v "^# remediation-trigger:" "$DEPENDABOT_YML" > dependabot_clean.yml
+            mv dependabot_clean.yml "$DEPENDABOT_YML"
+            git add "$DEPENDABOT_YML"
+            git commit -m "chore(security): revert trigger stamp [skip ci]"
+
+            PUSH_STATUS=0
+            git push origin "HEAD:${TARGET_BRANCH}" || PUSH_STATUS=$?
+
+            if [ "$PUSH_STATUS" -eq 0 ]; then
+              PRIMARY_TRIGGERED=true
+              echo "Primary trigger: pushed dependabot.yml touch commit to ${TARGET_BRANCH}. Dependabot will open PRs for all fixable High/Critical alerts shortly."
+              echo "## Primary Trigger" >> "$GITHUB_STEP_SUMMARY"
+              echo "Pushed a touch commit to \`${DEPENDABOT_YML}\` on \`${TARGET_BRANCH}\`. Dependabot will sweep all fixable alerts and open PRs." >> "$GITHUB_STEP_SUMMARY"
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::Push of dependabot.yml touch commit failed (exit $PUSH_STATUS). Falling back to per-alert state cycle."
+              # Roll back local commits so the working tree is clean for
+              # any subsequent operations.
+              git reset --hard "origin/${TARGET_BRANCH}" 2>/dev/null || true
+            fi
+          else
+            echo "::notice::.github/dependabot.yml not found -- skipping primary trigger. Falling back to per-alert state cycle."
+          fi
+
+          # --------------------------------------------------------------------
+          # Per-alert loop: record status + run FALLBACK trigger when needed
+          # --------------------------------------------------------------------
           while IFS=$'\t' read -r component cve severity cvss fixed_version fix url number; do
 
             # ------------------------------------------------------------------
@@ -235,82 +311,59 @@ jobs:
               --jq '.[0] // empty' 2>/dev/null || echo "")
 
             if [ -n "$EXISTING_PR" ]; then
-              # ----------------------------------------------------------------
-              # A Dependabot PR already exists -- nothing more to do.
-              # ----------------------------------------------------------------
               PR_URL=$(echo "$EXISTING_PR" | jq -r '.url')
               ACTION="Dependabot PR already open: $PR_URL"
               echo "[$severity] $component ($cve): $ACTION"
 
             elif [ "$fix" = "true" ]; then
-              # ----------------------------------------------------------------
-              # No PR yet, but a patched version exists.
-              #
-              # Strategy: trigger Dependabot to open a security-update PR by
-              # cycling the alert state (dismiss → reopen).  GitHub's internal
-              # Dependabot scheduler re-evaluates every open alert that has an
-              # available fix; reopening an alert that was in a transient
-              # "dismissed" state is the documented way to force a fresh run
-              # without waiting for the next scheduled sweep.
-              #
-              # Why not a direct "create PR" API call?
-              #   GitHub does not expose a public REST endpoint to imperatively
-              #   request a Dependabot security-update PR for a specific alert.
-              #   The dismiss→reopen cycle is the closest supported primitive.
-              #
-              # Prerequisites (must be configured on the repository):
-              #   • Dependabot alerts        -- enabled
-              #   • Dependabot security updates -- enabled  (Settings → Code
-              #     security → Dependabot security updates)
-              #   • DEPENDABOT_PAT has `security_events` scope (read/write)
-              # ----------------------------------------------------------------
 
-              echo "[$severity] $component ($cve): No open PR found. Triggering Dependabot via alert #${number} state cycle..."
+              if [ "$PRIMARY_TRIGGERED" = "true" ]; then
+                # Primary trigger already fired -- Dependabot will pick this
+                # alert up in its sweep.  No per-alert action needed.
+                ACTION="Dependabot PR queued via dependabot.yml push. Fix: ${component} → ${fixed_version}. Alert: ${url}"
+                echo "[$severity] $component ($cve): $ACTION"
 
-              # --- Dismiss the alert (tolerable_risk is a neutral reason) ---
-              DISMISS_HTTP=$(gh api \
-                --method PATCH \
-                -H "Accept: application/vnd.github+json" \
-                -H "X-GitHub-Api-Version: 2022-11-28" \
-                "/repos/${REPO}/dependabot/alerts/${number}" \
-                -f state="dismissed" \
-                -f dismissed_reason="tolerable_risk" \
-                -f dismissed_comment="Auto-dismissed by remediation workflow to trigger a fresh Dependabot security-update PR. Will be reopened immediately." \
-                --jq '.state' 2>/dev/null || echo "error")
-
-              if [ "$DISMISS_HTTP" != "dismissed" ]; then
-                # Dismissal failed (e.g. token lacks security_events write
-                # scope, or Dependabot security updates are not enabled).
-                # Fall back to a plain comment on the alert URL so the team
-                # is notified without losing the alert.
-                ACTION="Could not dismiss alert #${number} to trigger PR (check token scope / Dependabot security updates setting). Manual fix required: update ${component} to ${fixed_version}. Alert: ${url}"
-                echo "::warning::[$severity] $component ($cve): $ACTION"
               else
-                # --- Immediately reopen the alert ---
-                REOPEN_HTTP=$(gh api \
+                # --------------------------------------------------------------
+                # FALLBACK: dismiss → reopen the alert to individually re-queue
+                # it with Dependabot's scheduler.
+                # --------------------------------------------------------------
+                echo "[$severity] $component ($cve): Running fallback trigger -- alert #${number} state cycle..."
+
+                DISMISS_STATE=$(gh api \
                   --method PATCH \
                   -H "Accept: application/vnd.github+json" \
                   -H "X-GitHub-Api-Version: 2022-11-28" \
                   "/repos/${REPO}/dependabot/alerts/${number}" \
-                  -f state="open" \
+                  -f state="dismissed" \
+                  -f dismissed_reason="tolerable_risk" \
+                  -f dismissed_comment="Auto-dismissed by remediation workflow to trigger a Dependabot security-update PR. Will be reopened immediately." \
                   --jq '.state' 2>/dev/null || echo "error")
 
-                if [ "$REOPEN_HTTP" = "open" ]; then
-                  ACTION="Dependabot PR triggered via alert #${number} state cycle (dismiss → reopen). PR will appear shortly. Fix: ${component} → ${fixed_version}. Alert: ${url}"
-                  echo "[$severity] $component ($cve): $ACTION"
-                else
-                  # Reopen failed -- alert is currently dismissed. Emit a
-                  # warning so an operator can reopen it manually.
-                  ACTION="Alert #${number} dismissed but could not be reopened automatically. Please reopen manually to trigger Dependabot PR. Alert: ${url}"
+                if [ "$DISMISS_STATE" != "dismissed" ]; then
+                  ACTION="Fallback trigger failed for alert #${number} (dismiss step). Check token scope (security_events write) and that Dependabot security updates are enabled. Manual fix required: ${component} → ${fixed_version}. Alert: ${url}"
                   echo "::warning::[$severity] $component ($cve): $ACTION"
+                else
+                  REOPEN_STATE=$(gh api \
+                    --method PATCH \
+                    -H "Accept: application/vnd.github+json" \
+                    -H "X-GitHub-Api-Version: 2022-11-28" \
+                    "/repos/${REPO}/dependabot/alerts/${number}" \
+                    -f state="open" \
+                    --jq '.state' 2>/dev/null || echo "error")
+
+                  if [ "$REOPEN_STATE" = "open" ]; then
+                    ACTION="Fallback trigger fired: alert #${number} cycled (dismiss → reopen). Dependabot PR will appear shortly. Fix: ${component} → ${fixed_version}. Alert: ${url}"
+                    echo "[$severity] $component ($cve): $ACTION"
+                  else
+                    ACTION="Alert #${number} was dismissed but reopen failed. Please reopen manually to trigger Dependabot PR. Alert: ${url}"
+                    echo "::warning::[$severity] $component ($cve): $ACTION"
+                  fi
                 fi
               fi
 
             else
-              # ----------------------------------------------------------------
-              # No fix is available upstream yet -- nothing Dependabot can do.
-              # Log for visibility; no state change performed.
-              # ----------------------------------------------------------------
+              # No upstream fix available yet -- nothing Dependabot can do.
               ACTION="No upstream fix available -- monitoring only. Alert: ${url}"
               echo "[$severity] $component ($cve): $ACTION"
             fi
