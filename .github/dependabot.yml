@@ -1,0 +1,11 @@
+version: 2
+
+updates:
+  # Security updates only
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+
+# created-by-remediation-agent: 2026-06-23T18:15:54Z
